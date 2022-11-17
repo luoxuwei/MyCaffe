@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include "net.h"
+#include "blob.h"
 
 using namespace std;
 
@@ -22,5 +23,7 @@ int main(int argc, char** argv) {
         cout << "layer = " << layers_[i] << " ; " << "ltype = " << ltypes_[i] << endl;
     }
 
-    system("pause");
+    //测试Blob类。
+    Blob test_blob(1, 1, 5, 5, TRANDN);
+    test_blob.print("Blob 里面的数据是：\n");
 }
