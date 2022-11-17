@@ -69,3 +69,32 @@ vector<cube>& Blob::get_data()
 {
     return blob_data;
 }
+
+Blob Blob::subBlob(int low_idx, int high_idx)
+{
+    //举例： [0,1,2,3,4,5]  -> [1,3)  -> [1,2]
+    if (high_idx > low_idx)
+    {
+        Blob tmp(high_idx - low_idx, C_, H_, W_);  // high_idx > low_idx
+        for (int i = low_idx; i < high_idx; ++i)
+        {
+            tmp[i - low_idx] = (*this)[i];
+        }
+        return tmp;
+    }
+    else
+    {
+        // low_idx >high_idx
+        //举例： [0,1,2,3,4,5]  -> [3,2)-> (6 - 3) + (2 -0) -> [3,4,5,0]
+        Blob tmp(N_ - low_idx + high_idx, C_, H_, W_);
+        for (int i = low_idx; i < N_; ++i)   //分开两段截取：先截取第一段
+        {
+            tmp[i - low_idx] = (*this)[i];
+        }
+        for (int i = 0; i < high_idx; ++i)   //分开两段截取：再截取循环到从0开始的这段
+        {
+            tmp[i + N_ - low_idx] = (*this)[i];
+        }
+        return tmp;
+    }
+}

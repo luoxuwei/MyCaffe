@@ -99,37 +99,32 @@ void ReadMnistLabel(string path, shared_ptr<Blob> &labels)
     }
 }
 
-int main(int argc, char** argv) {
-    string configFile = "./my_model.json";
+void trainModel(string configFile, shared_ptr<Blob> X, shared_ptr<Blob> Y)
+{
+    //0. 读入并解析我们的网络结构定义
     NetParameter net_param;
     net_param.readNetParam(configFile);
 
-    cout << "learning rate =  " << net_param.lr << endl;
-    cout << "batch size =  " << net_param.batch_size << endl;
+    //1. 将60000张图片以59:1的比例划分为训练集（59000张）和验证集（1000张）
+    shared_ptr<Blob> X_train(new Blob(X->subBlob(0,59000)));  //左闭右开区间，即[ 0, 59000 )
+    shared_ptr<Blob> Y_train(new Blob(Y->subBlob(0, 59000)));
+    shared_ptr<Blob> X_val(new Blob(X->subBlob(59000, 60000)));
+    shared_ptr<Blob> Y_val(new Blob(Y->subBlob(59000, 60000)));
 
-    vector<string> layers_ = net_param.layers;
-    vector<string> ltypes_ = net_param.ltypes;
-    for (int i = 0; i < layers_.size(); ++i)
-    {
-        cout << "layer = " << layers_[i] << " ; " << "ltype = " << ltypes_[i] << endl;
-    }
+    /*放在一个vector里只是为了传参方便*/
+    vector<shared_ptr<Blob>> XX{ X_train, X_val };
+    vector<shared_ptr<Blob>> YY{ Y_train, Y_val };
 
-    //测试Blob类。
-    Blob test_blob(1, 1, 5, 5, TRANDN);
-    test_blob.print("Blob 里面的数据是：\n");
+    //2. 初始化网络结构
 
-    //测试加载mnist数据集
-    shared_ptr<Blob> mnist_data(new Blob(60000, 1, 28, 28, TZEROS));
-    shared_ptr<Blob> mnist_label(new Blob(60000, 10, 1, 1, TZEROS));
-    ReadMnistData("mnist_data/train/train-images.idx3-ubyte", mnist_data);
-    ReadMnistLabel("mnist_data/train/train-labels.idx1-ubyte", mnist_label);
 
-    vector<cube>& list0 = mnist_data->get_data();
-    vector<cube>& list1 = mnist_label->get_data();
+}
 
-    for (int i = 0; i<3; ++i)
-    {
-        list0[i].print("images：");
-        list1[i].print("labels：");
-    }
+int main(int argc, char** argv) {
+    //创建两个Blob对象，一个用来存储图片特征值（数据），另一个用来存储标签值
+    shared_ptr<Blob> images(new Blob(60000, 1, 28, 28, TZEROS));
+    shared_ptr<Blob> labels(new Blob(60000, 10, 1, 1, TZEROS));  //保存one-hot编码的标签值
+    ReadMnistData("mnist_data/train/train-images.idx3-ubyte", images);  //读取data
+    ReadMnistLabel("mnist_data/train/train-labels.idx1-ubyte", labels);   //读取label
+    trainModel("./my_model.json", images, labels);
 }
