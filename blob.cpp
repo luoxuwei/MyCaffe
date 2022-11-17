@@ -59,3 +59,13 @@ void Blob::print(string str)
         this->blob_data[i].print();//逐一打印cube，调用cube中重载好的print()
     }
 }
+
+cube& Blob::operator[] (int i)
+{
+    return blob_data[i];
+}
+
+vector<cube>& Blob::get_data()
+{
+    return blob_data;
+}
