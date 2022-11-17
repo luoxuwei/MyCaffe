@@ -4,9 +4,9 @@ project("MyCaffe")
 include_directories(.)
 
 add_library(mycaffe-core SHARED
-        net.h
-        layer.h
-        net.cpp)
+        net.cpp
+        blob.cpp
+        layer.cpp)
 
 find_library(
         armadillo-lib
@@ -28,7 +28,7 @@ target_link_libraries(
         ${protobuf-lib}
 )
 
-add_executable(MyCaffe main.cpp blob.h blob.cpp layer.cpp)
+add_executable(MyCaffe main.cpp )
 
 target_link_libraries(MyCaffe mycaffe-core)
 
