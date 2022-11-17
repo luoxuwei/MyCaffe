@@ -77,3 +77,65 @@ void NetParameter::readNetParam(std::string file) {
     }
 
 }
+
+void Net::initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<shared_ptr<Blob>>& Y)
+{
+    //1.打印层结构
+    layers_ = param.layers;   // 层名，param.layers类型为vector<string>
+    ltypes_ = param.ltypes;    // 层类型 , param.ltypes类型为vector<string>
+    for (int i = 0; i < layers_.size(); ++i)
+    {
+        cout << "layer = " << layers_[i] << " ; " << "ltype = " << ltypes_[i] << endl;
+    }
+    //2.初始化Net类相关成员变量
+    X_train_ = X[0];
+    Y_train_ = Y[0];
+    X_val_ = X[1];
+    Y_val_ = Y[1];
+
+    for (int i = 0; i < (int)layers_.size(); ++i)   //遍历每一层
+    {
+        data_[layers_[i]] = vector<shared_ptr<Blob>>(3, NULL);    //为每一层创建前向计算要用到的3个Blob
+        diff_[layers_[i]] = vector<shared_ptr<Blob>>(3, NULL);      //为每一层创建反向计算要用到的3个Blob
+        outShapes_[layers_[i]] = vector<int>(4);       //定义缓存，存储每一层的输出尺寸
+    }
+
+    //3. 完成每一层的W和b的初始化
+    shared_ptr<Layer> myLayer(NULL);
+    vector<int> inShape = { param.batch_size,
+                            X_train_->get_C(),
+                            X_train_->get_H(),
+                            X_train_->get_W() };
+    cout << "input -> (" << inShape[0] << ", " << inShape[1] << ", " << inShape[2] << ", " << inShape[3] << ")" << endl;
+    /*最后一层softmax层，没什么初始化的，所以代码里减去了这一层*/
+    for (int i = 0; i < (int)layers_.size()-1; ++i)   //遍历每一层
+    {
+        string lname = layers_[i];
+        string ltype = ltypes_[i];
+        //conv1->relu1->pool1->fc1->softmax
+        //1. 代码耦合很紧，添加新的层类型比较困难，需要改动的地方比较多。
+        //2. 层对象是局部对象，下次想要调用层里面的方法，必须重新新建对象。
+        if (ltype == "Conv")
+        {
+            myLayer.reset(new ConvLayer);
+        }
+        if (ltype == "Relu")
+        {
+            myLayer.reset(new ReluLayer);
+        }
+        if (ltype == "Pool")
+        {
+            myLayer.reset(new PoolLayer);
+        }
+        if (ltype == "Fc")
+        {
+            myLayer.reset(new FcLayer);
+        }
+        myLayers_[lname] = myLayer;
+        myLayer->initLayer(inShape, lname, data_[lname], param.lparams[lname]);
+        myLayer->calcShape(inShape, outShapes_[lname], param.lparams[lname]);
+        inShape.assign(outShapes_[lname].begin(), outShapes_[lname].end());
+        cout << lname << "->(" << outShapes_[lname][0] << "," << outShapes_[lname][1] << "," << outShapes_[lname][2] << "," << outShapes_[lname][3] << ")" << endl;
+    }
+
+}

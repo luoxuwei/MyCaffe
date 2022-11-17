@@ -8,12 +8,15 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #include "layer.h"
+#include "blob.h"
 
 using std::unordered_map;
 using std::vector;
 using std::string;
+using std::shared_ptr;
 
 struct NetParameter {
     /*学习率*/
@@ -52,6 +55,28 @@ struct NetParameter {
     unordered_map<string, LayerParameter> lparams;
 
     void readNetParam(string file);
+};
+
+class Net
+{
+public:
+    void initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<shared_ptr<Blob>>& Y);
+private:
+    // 训练集
+    shared_ptr<Blob> X_train_;
+    shared_ptr<Blob> Y_train_;
+    // 验证集
+    shared_ptr<Blob> X_val_;
+    shared_ptr<Blob> Y_val_;
+
+
+    vector<string> layers_;  //层名
+    vector<string> ltypes_; //层类型
+    //
+    unordered_map<string, vector<shared_ptr<Blob>>> data_;    //前向计算需要用到的Blob data_[0]=X,  data_[1]=W,data_[2] = b;
+    unordered_map<string, vector<shared_ptr<Blob>>> diff_;    //梯度的Blob data_[0]=dw,  data_[1]=db;
+    unordered_map<string, shared_ptr<Layer>> myLayers_;
+    unordered_map<string,vector<int>> outShapes_;    //存储每一层的输出尺寸
 };
 
 #endif //MYCAFFE_NET_H

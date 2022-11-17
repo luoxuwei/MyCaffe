@@ -34,7 +34,24 @@ public:
     Blob(const int n, const int c, const int h, const int w, int type = TDEFAULT);  /*type:填充立方体的方式*/
     vector<cube>& get_data();
     cube& operator[] (int i);
+    Blob& operator*= (const double i);
     Blob subBlob(int low_idx, int high_idx);
+    inline int get_N() const
+    {
+        return N_;
+    }
+    inline int get_C() const
+    {
+        return C_;
+    }
+    inline int get_H() const
+    {
+        return H_;
+    }
+    inline int get_W() const
+    {
+        return W_;
+    }
     void print(string str = "");
 private:
     void _init(const int n, const int c, const int h, const int w, int type);

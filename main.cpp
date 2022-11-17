@@ -116,7 +116,8 @@ void trainModel(string configFile, shared_ptr<Blob> X, shared_ptr<Blob> Y)
     vector<shared_ptr<Blob>> YY{ Y_train, Y_val };
 
     //2. 初始化网络结构
-
+    Net model;
+    model.initNet(net_param, XX, YY);
 
 }
 

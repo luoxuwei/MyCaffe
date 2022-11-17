@@ -28,7 +28,7 @@ target_link_libraries(
         ${protobuf-lib}
 )
 
-add_executable(MyCaffe main.cpp blob.h blob.cpp)
+add_executable(MyCaffe main.cpp blob.h blob.cpp layer.cpp)
 
 target_link_libraries(MyCaffe mycaffe-core)
 

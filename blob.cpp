@@ -65,6 +65,15 @@ cube& Blob::operator[] (int i)
     return blob_data[i];
 }
 
+Blob& Blob::operator*= (const double k)
+{
+    for (int i = 0; i < N_; ++i)
+    {
+        blob_data[i] = blob_data[i] * k;   //调用cube中实现的*操作符
+    }
+    return *this;
+}
+
 vector<cube>& Blob::get_data()
 {
     return blob_data;
