@@ -57,6 +57,12 @@ void ConvLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const
     return;
 }
 
+void ConvLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
+{
+    cout << "ConvLayer::forward()..." << endl;
+    return;
+}
+
 /*relu和池化层没有参数*/
 void ReluLayer::initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param)
 {
@@ -67,6 +73,12 @@ void ReluLayer::initLayer(const vector<int>& inShape, const string& lname, vecto
 void ReluLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param)
 {
     outShape.assign(inShape.begin(), inShape.end());//将inShape复制一份给outShape（深拷贝）
+    return;
+}
+
+void ReluLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
+{
+    cout << "ReluLayer::forward()..." << endl;
     return;
 }
 
@@ -97,6 +109,12 @@ void PoolLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const
     outShape[1] = Co;
     outShape[2] = Ho;
     outShape[3] = Wo;
+    return;
+}
+
+void PoolLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
+{
+    cout << "PoolLayer::forward()..." << endl;
     return;
 }
 
@@ -137,5 +155,11 @@ void FcLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const L
     outShape[1] = Co;
     outShape[2] = Ho;
     outShape[3] = Wo;
+    return;
+}
+
+void FcLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
+{
+    cout << "FcLayer::forward()..." << endl;
     return;
 }

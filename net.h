@@ -61,6 +61,8 @@ class Net
 {
 public:
     void initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<shared_ptr<Blob>>& Y);
+    void trainNet(NetParameter& param);
+    void train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParameter& param);
 private:
     // 训练集
     shared_ptr<Blob> X_train_;

@@ -146,3 +146,54 @@ void Net::initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<share
     }
 
 }
+
+void Net::trainNet(NetParameter& param)
+{
+    int N = X_train_->get_N();
+    cout << "N = " << N << endl;
+    int iter_per_epoch = N / param.batch_size;  //59000/200 = 295
+    //总的批次数（迭代次数）= 单个epoch所含批次数 * epoch个数
+    int num_batchs = iter_per_epoch * param.num_epochs;  // 295 * 2 = 590
+    cout << "num_batchs(iterations) = " << num_batchs << endl;
+
+    //for (int iter = 0; iter < num_batchs; ++iter)
+    for (int iter = 0; iter < 2; ++iter)
+    {
+        //----------step1. 从整个训练集中获取一个mini-batch
+        shared_ptr<Blob> X_batch;
+        shared_ptr<Blob> Y_batch;
+        /*可能最后剩下的部分不足一个batch size,截取的时候high-indx会超出数据集大小,%N后能解决这个问题，超出的部分会转到从0开始算，subBlob能处理这种情况*/
+        X_batch.reset(new Blob(X_train_->subBlob((iter* param.batch_size) % N,
+                                                 ((iter + 1)* param.batch_size) % N)));
+        Y_batch.reset(new Blob(Y_train_->subBlob((iter* param.batch_size) % N,
+                                                 ((iter + 1)* param.batch_size) % N)));
+
+        //----------step2. 用该mini-batch训练网络模型
+        train_with_batch(X_batch, Y_batch, param);
+
+        //----------step3. 参数更新
+
+        //----------step4. 评估模型当前准确率（训练集和验证集）
+    }
+
+}
+
+void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParameter& param)
+{
+    //------- step1. 将mini-batch填充到初始层的X当中
+    data_[layers_[0]][0]=X;
+
+    //------- step2. 逐层前向计算
+    int n = layers_.size();  //层数
+    for (int i = 0; i < n - 1; ++i) //最后一层单独拧出来
+    {
+        string lname = layers_[i];
+        shared_ptr<Blob> out;
+        myLayers_[lname]->forward(data_[lname], out, param.lparams[lname]);
+        data_[layers_[i+1]][0] = out;
+    }
+
+    //------- step3. softmax前向计算和计算代价值
+
+    //------- step4. 逐层反向传播
+}

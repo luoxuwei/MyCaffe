@@ -38,6 +38,7 @@ public:
     virtual void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param) = 0;
     /*每一层的Blob尺寸都是由上一层Blob尺寸经过一定计算规则计算得到的，需要为每一层计算输出尺寸的方法。*/
     virtual void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param) = 0;
+    virtual void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param) = 0;
 };
 
 class ConvLayer : public Layer
@@ -47,6 +48,7 @@ public:
     ~ConvLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
     void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
 };
 
 class ReluLayer : public Layer
@@ -56,6 +58,7 @@ public:
     ~ReluLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
     void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
 };
 
 class PoolLayer : public Layer
@@ -65,6 +68,7 @@ public:
     ~PoolLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
     void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
 };
 
 class FcLayer : public Layer
@@ -74,6 +78,7 @@ public:
     ~FcLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
     void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
 };
 
 #endif //MYCAFFE_LAYER_H
