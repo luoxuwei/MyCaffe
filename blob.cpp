@@ -74,6 +74,15 @@ Blob& Blob::operator*= (const double k)
     return *this;
 }
 
+Blob& Blob::operator= (double val)
+{
+    for (int i = 0; i < N_; ++i)
+    {
+        blob_data[i].fill(val);   //调用cube中实现的*操作符
+    }
+    return *this;
+}
+
 vector<cube>& Blob::get_data()
 {
     return blob_data;
@@ -106,4 +115,26 @@ Blob Blob::subBlob(int low_idx, int high_idx)
         }
         return tmp;
     }
+}
+
+Blob Blob::pad(int pad, double val)
+{
+    assert(!blob_data.empty());   //Blob自身不为空
+    Blob padX(N_, C_, H_ + 2 * pad, W_ + 2 * pad);
+    padX = val;
+    for (int n = 0; n < N_; ++n)
+    {
+        for (int c = 0; c < C_; ++c)
+        {
+            for (int h = 0; h < H_; ++h)
+            {
+                for (int w = 0; w < W_; ++w)
+                {
+                    padX[n](h + pad, w + pad, c) = blob_data[n](h, w, c);
+                }
+            }
+        }
+    }
+    return padX;
+
 }

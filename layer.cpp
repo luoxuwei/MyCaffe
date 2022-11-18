@@ -1,10 +1,11 @@
 //
 // Created by xuwei on 2022/11/18.
 //
-
+#include <cassert>
 #include "layer.h"
 
 using namespace std;
+using namespace arma;
 
 void ConvLayer::initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param)
 {
@@ -60,6 +61,43 @@ void ConvLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const
 void ConvLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
 {
     cout << "ConvLayer::forward()..." << endl;
+    if (out)
+        out.reset();
+    //-------step1.获取相关尺寸（输入，卷积核，输出）
+    assert(in[0]->get_C() == in[1]->get_C());  //断言：输入Blob通道数和卷积核Blob通道数一样（务必保证这一点）
+
+    int N = in[0]->get_N();        //输入Blob中cube个数（该batch样本个数）
+    int C = in[0]->get_C();         //输入Blob通道数
+    int Hx = in[0]->get_H();      //输入Blob高
+    int Wx = in[0]->get_W();    //输入Blob宽
+
+    int F = in[1]->get_N();		  //卷积核个数
+    int Hw = in[1]->get_H();     //卷积核高
+    int Ww = in[1]->get_W();   //卷积核宽
+
+    int Ho = (Hx + param.conv_pad * 2 - Hw) / param.conv_stride + 1;    //输出Blob高（卷积后）
+    int Wo = (Wx + param.conv_pad * 2 - Ww) / param.conv_stride + 1;  //输出Blob宽（卷积后）
+    //-------step2.根据要求做padding操作
+    Blob padX = in[0]->pad(param.conv_pad);
+    out.reset(new Blob(N, F, Ho, Wo));
+    for (int n = 0; n < N; ++n)   //输出cube数
+    {
+        for (int f = 0; f < F; ++f)  //输出通道数
+        {
+            for (int hh = 0; hh < Ho; ++hh)   //输出Blob的高
+            {
+                for (int ww = 0; ww < Wo; ++ww)   //输出Blob的宽
+                {
+                    cube window = padX[n](	span(hh*param.conv_stride, hh*param.conv_stride + Hw - 1),
+                                              span(ww*param.conv_stride, ww*param.conv_stride + Ww - 1),
+                                              span::all);//span::all表示所有通道。这个位置的参数是传入通道的起始位置，我们是要全部通道。
+                    //out = Wx+b，%是cube重载的运算符，就是对应位置元素相乘，accu是求一个cube里所有元素的和。
+                    //b是一个cube不是数值，要把里面的数值取出来，通常可以传入坐标(*in[2])[f](0,0,0)，as_scalar是arma提供的做这样操作的方法
+                    (*out)[n](hh, ww, f) = accu(window % (*in[1])[f]) + as_scalar((*in[2])[f]);    //b = (F,1,1,1)
+                }
+            }
+        }
+    }
     return;
 }
 
