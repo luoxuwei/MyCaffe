@@ -138,3 +138,13 @@ Blob Blob::pad(int pad, double val)
     return padX;
 
 }
+
+void Blob::maxIn(double val)
+{
+    assert(!blob_data.empty());
+    for (int i = 0; i < N_; ++i)
+    {
+        blob_data[i].transform([val](double e){return e>val ? e : val; });
+    }
+    return;
+}

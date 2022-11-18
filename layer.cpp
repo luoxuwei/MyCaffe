@@ -117,6 +117,11 @@ void ReluLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const
 void ReluLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
 {
     cout << "ReluLayer::forward()..." << endl;
+    if (out)
+        out.reset();
+
+    out.reset(new Blob(*in[0]));//会调用Blob的拷贝构造函数，这样out里的内容就和in一样。
+    out->maxIn(0);
     return;
 }
 
@@ -153,6 +158,40 @@ void PoolLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const
 void PoolLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
 {
     cout << "PoolLayer::forward()..." << endl;
+    if (out)
+        out.reset();
+    //-------step1.获取相关尺寸（输入，池化核，输出）
+    int N = in[0]->get_N();        //输入Blob中cube个数（该batch样本个数）
+    int C = in[0]->get_C();         //输入Blob通道数
+    int Hx = in[0]->get_H();      //输入Blob高
+    int Wx = in[0]->get_W();    //输入Blob宽
+
+    int Hw = param.pool_height;     //池化核高
+    int Ww = param.pool_width;   //池化核宽
+
+    //池化层没有padding
+    int Ho = (Hx  - Hw) / param.pool_stride + 1;    //输出Blob高（池化后）
+    int Wo = (Wx - Ww) / param.pool_stride + 1;  //输出Blob宽（池化后）
+
+    //-------step2.开始池化
+    out.reset(new Blob(N, C, Ho, Wo));//输出通道数等于输入通道数，这点与卷积核不同
+
+    for (int n = 0; n < N; ++n)   //输出cube数
+    {
+        for (int c = 0; c < C; ++c)  //输出通道数
+        {
+            for (int hh = 0; hh < Ho; ++hh)   //输出Blob的高
+            {
+                for (int ww = 0; ww < Wo; ++ww)   //输出Blob的宽
+                {
+                    (*out)[n](hh, ww, c) = (*in[0])[n](span(hh*param.pool_stride, hh*param.pool_stride + Hw - 1),
+                                                       span(ww*param.pool_stride, ww*param.pool_stride + Ww - 1),
+                                                       span(c, c)).max();
+                }
+            }
+        }
+    }
+
     return;
 }
 

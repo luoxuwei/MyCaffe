@@ -38,6 +38,7 @@ public:
     Blob& operator= (double val);
     Blob subBlob(int low_idx, int high_idx);
     Blob pad(int pad,double val=0);
+    void maxIn(double val=0.0);
     inline int get_N() const
     {
         return N_;
