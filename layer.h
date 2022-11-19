@@ -81,4 +81,10 @@ public:
     void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
 };
 
+class SoftmaxLossLayer
+{
+public:
+    static void softmax_cross_entropy_with_logits(const vector<shared_ptr<Blob>>& in, double& loss, shared_ptr<Blob>& dout);
+};
+
 #endif //MYCAFFE_LAYER_H

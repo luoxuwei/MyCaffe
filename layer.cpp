@@ -237,6 +237,64 @@ void FcLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const L
 
 void FcLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
 {
+
     cout << "FcLayer::forward()..." << endl;
+    if (out)
+        out.reset();
+    //-------step1.获取相关尺寸（输入，全连接核，输出）
+    int N = in[0]->get_N();        //输入Blob中cube个数（该batch样本个数）
+    int C = in[0]->get_C();         //输入Blob通道数
+    int Hx = in[0]->get_H();      //输入Blob高
+    int Wx = in[0]->get_W();    //输入Blob宽
+
+    int F = in[1]->get_N();		  //全连接核个数
+    int Hw = in[1]->get_H();     //全连接核高
+    int Ww = in[1]->get_W();   //全连接核宽
+    assert(in[0]->get_C() == in[1]->get_C());  //输入Blob通道数和全连接核Blob通道数一样（务必保证这一点）
+    assert(Hx == Hw  && Wx == Ww);  //输入Blob高和宽和全连接核Blob高和宽一样（务必保证这一点）
+
+    int Ho =  1;    //输出Blob高（全连接操作后）
+    int Wo =  1;  //输出Blob宽（全连接操作后）
+
+    //-------step2.开始全连接运算
+    out.reset(new Blob(N, F, Ho, Wo));
+
+    for (int n = 0; n < N; ++n)   //输出cube数
+    {
+        for (int f = 0; f < F; ++f)  //输出通道数
+        {
+            (*out)[n](0, 0, f) = accu((*in[0])[n] % (*in[1])[f]) + as_scalar((*in[2])[f]);    //b = (F,1,1,1)
+        }
+    }
+
+}
+
+void SoftmaxLossLayer::softmax_cross_entropy_with_logits(const vector<shared_ptr<Blob>>& in, double& loss, shared_ptr<Blob>& dout)
+{
+    cout << "SoftmaxLossLayer::softmax_cross_entropy_with_logits()..." << endl;
+    if (dout)
+        dout.reset();
+    //-------step1.获取相关尺寸
+    int N = in[0]->get_N();        //输入Blob中cube个数（该batch样本个数）
+    int C = in[0]->get_C();         //输入Blob通道数
+    int Hx = in[0]->get_H();      //输入Blob高
+    int Wx = in[0]->get_W();    //输入Blob宽
+    assert(Hx == 1 && Wx==1);
+
+    dout.reset(new Blob(N, C, Hx, Wx));   //（N,C,1,1）
+    double loss_ = 0;
+    //先做softmax归一化，再计算交叉熵损失
+    for (int i = 0; i < N; ++i)
+    {
+        //softmax归一化
+        cube prob = arma::exp((*in[0])[i]) / arma::accu(arma::exp((*in[0])[i]));
+        //在通道维度上把各个元素加起来
+        loss_ += (-arma::accu((*in[1])[i] % arma::log(prob)) );  //累加各个样本的交叉熵损失值
+        //梯度表达式推导：https://blog.csdn.net/qian99/article/details/78046329
+        (*dout)[i]=prob - (*in[1])[i];  //计算各个样本产生的误差信号（反向梯度）
+    }
+    loss = loss_ / N;   //求平均损失
+
+
     return;
 }

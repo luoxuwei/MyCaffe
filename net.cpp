@@ -157,7 +157,7 @@ void Net::trainNet(NetParameter& param)
     cout << "num_batchs(iterations) = " << num_batchs << endl;
 
     //for (int iter = 0; iter < num_batchs; ++iter)
-    for (int iter = 0; iter < 2; ++iter)
+    for (int iter = 0; iter < 1; ++iter)
     {
         //----------step1. 从整个训练集中获取一个mini-batch
         shared_ptr<Blob> X_batch;
@@ -182,6 +182,8 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
 {
     //------- step1. 将mini-batch填充到初始层的X当中
     data_[layers_[0]][0]=X;
+    //把y放到最后一层，反正最后一层是损失层1空着也是空，正好用来传递标签值y
+    data_[layers_.back()][1] = Y;
 
     //------- step2. 逐层前向计算
     int n = layers_.size();  //层数
@@ -194,6 +196,9 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
     }
 
     //------- step3. softmax前向计算和计算代价值
+    //layers_.back()最后一个元素, diff_[layers_.back()][0] 是dx
+    SoftmaxLossLayer::softmax_cross_entropy_with_logits(data_[layers_.back()], loss_, diff_[layers_.back()][0]);
+    cout << "loss_=" << loss_ << endl;   //第一次迭代后，损失值约为2.3
 
     //------- step4. 逐层反向传播
 }

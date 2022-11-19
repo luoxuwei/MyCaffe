@@ -115,6 +115,11 @@ void trainModel(string configFile, shared_ptr<Blob> X, shared_ptr<Blob> Y)
     Net model;
     model.initNet(net_param, XX, YY);
 
+    //3. 开始训练
+    cout << "------------ step3. Train start... ---------------" << endl;
+    model.trainNet(net_param);
+    cout << "------------ Train end... ---------------" << endl;
+
 }
 
 int main(int argc, char** argv) {
