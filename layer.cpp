@@ -125,6 +125,27 @@ void ReluLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& ou
     return;
 }
 
+void ReluLayer::backward(const shared_ptr<Blob>& din,
+                         const vector<shared_ptr<Blob>>& cache,
+                         vector<shared_ptr<Blob>>& grads,
+                         const LayerParameter& param)
+{
+    cout << "ReluLayer::backward()..." << endl;
+    //step1. 设置输出梯度Blob的尺寸（dX---grads[0]）
+    grads[0].reset(new Blob(*cache[0]));
+
+    //step2. 获取掩码mask
+    int N = grads[0]->get_N();
+    for (int n = 0; n < N; ++n)
+    {
+        (*grads[0])[n].transform([](double e) {return e > 0 ? 1 : 0; });
+    }
+    (*grads[0]) = (*grads[0]) * (*din);
+    
+    return;
+}
+
+
 void PoolLayer::initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param)
 {
     cout << "PoolLayer::initLayer()  ok!!!" << endl;
@@ -187,6 +208,53 @@ void PoolLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& ou
                     (*out)[n](hh, ww, c) = (*in[0])[n](span(hh*param.pool_stride, hh*param.pool_stride + Hw - 1),
                                                        span(ww*param.pool_stride, ww*param.pool_stride + Ww - 1),
                                                        span(c, c)).max();
+                }
+            }
+        }
+    }
+
+    return;
+}
+
+void PoolLayer::backward(const shared_ptr<Blob>& din,
+                         const vector<shared_ptr<Blob>>& cache,
+                         vector<shared_ptr<Blob>>& grads,
+                         const LayerParameter& param)
+{
+    cout << "PoolLayer::backward()..." << endl;
+    //step1. 设置输出梯度Blob的尺寸（dX---grads[0]）池化层没有w和b
+    grads[0].reset(new Blob(cache[0]->size(), TZEROS));
+    //step2. 获取输入梯度Blob的尺寸（din）
+    int Nd = din->get_N();        //输入梯度Blob中cube个数（该batch样本个数）
+    int Cd = din->get_C();         //输入梯度Blob通道数
+    int Hd = din->get_H();      //输入梯度Blob高
+    int Wd = din->get_W();    //输入梯度Blob宽
+
+    //step3. 获取池化核相关参数
+    int Hp = param.pool_height;
+    int Wp = param.pool_width;
+    int stride = param.pool_stride;
+
+    //step4. 开始反向传播
+    for (int n = 0; n < Nd; ++n)   //输出cube数
+    {
+        for (int c = 0; c < Cd; ++c)  //输出通道数
+        {
+            for (int hh = 0; hh < Hd; ++hh)   //输出Blob的高
+            {
+                for (int ww = 0; ww < Wd; ++ww)   //输出Blob的宽
+                {
+                    //(1). 获取掩码mask
+                    mat window = (*cache[0])[n](span(hh*param.pool_stride, hh*param.pool_stride + Hp - 1),
+                                                span(ww*param.pool_stride, ww*param.pool_stride + Wp - 1),
+                                                span(c, c));
+                    double maxv = window.max();
+                    //maxv是一个数值，==号的作用是让window里的每一个值如果与maxv相等就置为true(1)，不相等为false(0)
+                    mat mask = conv_to<mat>::from(maxv == window);  //"=="返回的是一个umat类型的矩阵！就是里面的元素都是unsigned 无符号的，umat转换为mat
+                    //(2). 计算梯度
+                    (*grads[0])[n](span(hh*param.pool_stride, hh*param.pool_stride + Hp - 1),
+                                   span(ww*param.pool_stride, ww*param.pool_stride + Wp - 1),
+                                   span(c, c))       +=       mask*(*din)[n](hh, ww, c);  //umat  -/-> mat
                 }
             }
         }

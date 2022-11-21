@@ -89,6 +89,26 @@ Blob& Blob::operator= (double val)
     return *this;
 }
 
+Blob operator*(Blob& A, Blob& B)  //友元函数的具体实现：这里没有类限定例如 (Blob& Blob::)这种形式
+{
+    //(1). 确保两个输入Blob尺寸一样
+    vector<int> size_A = A.size();
+    vector<int> size_B = B.size();
+    for (int i = 0; i < 4; ++i)
+    {
+        assert(size_A[i] == size_B[i]);  //断言：两个输入Blob的尺寸（N,C,H,W）一样！
+    }
+    //(2). 遍历所有的cube，每一个cube做对应位置相乘（cube % cube）
+    int N = size_A[0];
+    Blob C(A.size());
+    for (int i = 0; i < N; ++i)
+    {
+        C[i] =A[i] % B[i];
+    }
+    return C;
+}
+
+
 vector<cube>& Blob::get_data()
 {
     return blob_data;
