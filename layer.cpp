@@ -269,6 +269,36 @@ void FcLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out,
 
 }
 
+void FcLayer::backward(const shared_ptr<Blob>& din,
+                       const vector<shared_ptr<Blob>>& cache,
+                       vector<shared_ptr<Blob>>& grads,
+                       const LayerParameter& param)
+{
+
+    cout << "FcLayer::backward()..." << endl;
+    //dX,dW,db  -> X,W,b 他们的尺寸是一一对应的
+    grads[0].reset(new Blob(cache[0]->size(),TZEROS));
+    grads[1].reset(new Blob(cache[1]->size(), TZEROS));
+    grads[2].reset(new Blob(cache[2]->size(), TZEROS));
+    int N = grads[0]->get_N();
+    int F = grads[1]->get_N();
+    assert(F == cache[1]->get_N());
+
+    for (int n = 0; n < N; ++n)
+    {
+        for (int f = 0; f < F; ++f)
+        {
+            //dX
+            (*grads[0])[n] += (*din)[n](0, 0, f) * (*cache[1])[f];
+            //dW 由于dw来源于不同样本产生的梯度所以最好除以N得到平均梯度
+            (*grads[1])[f] += (*din)[n](0, 0, f) * (*cache[0])[n] / N;
+            //db
+            (*grads[2])[f] += (*din)[n](0, 0, f) / N;
+        }
+    }
+    return;
+}
+
 void SoftmaxLossLayer::softmax_cross_entropy_with_logits(const vector<shared_ptr<Blob>>& in, double& loss, shared_ptr<Blob>& dout)
 {
     cout << "SoftmaxLossLayer::softmax_cross_entropy_with_logits()..." << endl;

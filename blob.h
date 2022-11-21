@@ -32,6 +32,7 @@ public:
         W_(0)/*图片的宽*/
     {}
     Blob(const int n, const int c, const int h, const int w, int type = TDEFAULT);  /*type:填充立方体的方式*/
+    Blob(const vector<int> shape_, int type = TDEFAULT);
     vector<cube>& get_data();
     cube& operator[] (int i);
     Blob& operator*= (const double i);
@@ -39,6 +40,7 @@ public:
     Blob subBlob(int low_idx, int high_idx);
     Blob pad(int pad,double val=0);
     void maxIn(double val=0.0);
+    vector<int> size() const;
     inline int get_N() const
     {
         return N_;

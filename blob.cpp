@@ -16,6 +16,12 @@ Blob::Blob(const int n, const int c, const int h, const int w, int type) : N_(n)
 
 }
 
+Blob::Blob(const vector<int> shape_, int type) : N_(shape_[0]), C_(shape_[1]), H_(shape_[2]), W_(shape_[3])
+{
+    arma_rng::set_seed_random();  //系统随机生成种子(如果没有这一句，就会每次启动程序(进程)时都默认从种子1开始来生成随机数！
+    _init(N_, C_, H_, W_, type);
+}
+
 void Blob::_init(const int n, const int c, const int h, const int w, int type)
 {
 
@@ -147,4 +153,13 @@ void Blob::maxIn(double val)
         blob_data[i].transform([val](double e){return e>val ? e : val; });
     }
     return;
+}
+
+vector<int> Blob::size() const
+{
+    vector<int> shape_{   N_,
+                          C_,
+                          H_,
+                          W_ };
+    return shape_;
 }

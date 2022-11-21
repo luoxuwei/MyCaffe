@@ -200,5 +200,13 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
     SoftmaxLossLayer::softmax_cross_entropy_with_logits(data_[layers_.back()], loss_, diff_[layers_.back()][0]);
     cout << "loss_=" << loss_ << endl;   //第一次迭代后，损失值约为2.3
 
-    //------- step4. 逐层反向传播
+    //------- step4. 逐层反向传播     //conv1<-relu1<-pool1<-fc1<-softmax
+    //从fc1开始反向传播
+    for (int i = n-2; i >= 0; --i)
+    {
+        string lname = layers_[i];
+        //输入后一层的梯度所以是i+1
+        myLayers_[lname]->backward(diff_[layers_[i+1]][0],  data_[lname],  diff_[lname],  param.lparams[lname]);
+    }
+
 }
