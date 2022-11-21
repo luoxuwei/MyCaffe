@@ -165,6 +165,27 @@ Blob Blob::pad(int pad, double val)
 
 }
 
+Blob Blob::deletePad(int pad)
+{
+    assert(!blob_data.empty());   //断言：Blob自身不为空
+    Blob out(N_, C_, H_ - 2 * pad, W_ - 2 * pad);
+    for (int n = 0; n < N_; ++n)
+    {
+        for (int c = 0; c < C_; ++c)
+        {
+            for (int h = pad; h < H_-pad; ++h)
+            {
+                for (int w = pad; w < W_-pad; ++w)
+                {
+                    //注意，out的索引是从0开始的，所以要减去pad
+                    out[n](h - pad, w - pad, c) = blob_data[n](h, w, c);
+                }
+            }
+        }
+    }
+    return out;
+}
+
 void Blob::maxIn(double val)
 {
     assert(!blob_data.empty());

@@ -101,6 +101,60 @@ void ConvLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& ou
     return;
 }
 
+void ConvLayer::backward(	const shared_ptr<Blob>& din,   //输入梯度
+                             const vector<shared_ptr<Blob>>& cache,
+                             vector<shared_ptr<Blob>>& grads,
+                             const LayerParameter& param		)
+{
+    cout << "ConvLayer::backward()..." << endl;
+    //step1. 设置输出梯度Blob的尺寸（dX---grads[0]）
+    grads[0].reset(new Blob(cache[0]->size(), TZEROS));
+    grads[1].reset(new Blob(cache[1]->size(), TZEROS));
+    grads[2].reset(new Blob(cache[2]->size(), TZEROS));
+    //step2. 获取输入梯度Blob的尺寸（din）
+    int Nd = din->get_N();        //输入梯度Blob中cube个数（该batch样本个数）
+    int Cd = din->get_C();         //输入梯度Blob通道数
+    int Hd = din->get_H();      //输入梯度Blob高
+    int Wd = din->get_W();    //输入梯度Blob宽
+    //step3. 获取卷积核相关参数
+    int Hw = param.conv_height;
+    int Ww = param.conv_width;
+    int stride = param.conv_stride;
+
+    //step4. 填充操作
+    Blob pad_X = cache[0]->pad(param.conv_pad);  //参与实际反向传播计算的应该是填充过的特征Blob
+    Blob pad_dX(pad_X.size(),TZEROS);                      //梯度Blob应该与该层的特征Blob尺寸保持一致
+
+    //step5. 开始反向传播
+    for (int n = 0; n < Nd; ++n)   //遍历输入梯度din的样本数
+    {
+        for (int c = 0; c < Cd; ++c)  //遍历输入梯度din的通道数
+        {
+            for (int hh = 0; hh < Hd; ++hh)   //遍历输入梯度din的高
+            {
+                for (int ww = 0; ww < Wd; ++ww)   //遍历输入梯度din的宽
+                {
+                    //(1). 通过滑动窗口，截取不同输入特征片段
+                    cube window = pad_X[n](span(hh*stride, hh*stride + Hw - 1),span(ww*stride, ww*stride + Ww - 1),span::all);
+                    //(2). 计算梯度
+                    //dX
+                    pad_dX[n](span(hh*stride, hh*stride + Hw - 1), span(ww*stride, ww*stride + Ww - 1), span::all)   +=   (*din)[n](hh, ww, c) * (*cache[1])[c];
+                    //dW  --->grads[1]
+                    (*grads[1])[c] += (*din)[n](hh, ww, c) * window  / Nd;
+                    //db   --->grads[2]
+                    (*grads[2])[c](0,0,0) += (*din)[n](hh, ww, c) / Nd;
+                }
+            }
+        }
+    }
+
+    //step6. 去掉输出梯度中的padding部分
+    (*grads[0]) = pad_dX.deletePad(param.conv_pad);
+
+    return;
+}
+
+
 /*relu和池化层没有参数*/
 void ReluLayer::initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param)
 {
@@ -141,7 +195,7 @@ void ReluLayer::backward(const shared_ptr<Blob>& din,
         (*grads[0])[n].transform([](double e) {return e > 0 ? 1 : 0; });
     }
     (*grads[0]) = (*grads[0]) * (*din);
-    
+
     return;
 }
 

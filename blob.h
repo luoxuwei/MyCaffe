@@ -40,6 +40,7 @@ public:
     friend Blob operator*(Blob& A, Blob& B);  //声明为友元函数
     Blob subBlob(int low_idx, int high_idx);
     Blob pad(int pad,double val=0);
+    Blob deletePad(int pad);
     void maxIn(double val=0.0);
     vector<int> size() const;
     inline int get_N() const
