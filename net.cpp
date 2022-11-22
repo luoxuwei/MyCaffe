@@ -3,6 +3,7 @@
 //
 
 #include "net.h"
+#include "snapshot.pb.h"
 #include <jsoncpp/json/json.h>
 #include <fstream>
 #include <cassert>
@@ -145,6 +146,27 @@ void Net::initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<share
         cout << lname << "->(" << outShapes_[lname][0] << "," << outShapes_[lname][1] << "," << outShapes_[lname][2] << "," << outShapes_[lname][3] << ")" << endl;
     }
 
+    //4. 是否采用fine-tune方式训练模型（也就是是否用预训练模型里面的参数覆盖原来的随机参数值）？
+    if (param.fine_tune)
+    {
+        fstream input(param.preTrainModel, ios::in | ios::binary);
+        if (!input)
+        {
+            cout << param.preTrainModel << " was not found ！！！" << endl;
+            return;
+        }
+
+        shared_ptr<MyCaffe::Snapshot>  snapshot_model(new MyCaffe::Snapshot);
+        if (!snapshot_model->ParseFromIstream(&input))  //解析预训练模型（protobuf提供的方法）
+        {
+            cout<< "Failed to parse the " << param.preTrainModel << " ！！！" << endl;
+            return;
+        }
+        cout << "--- Load the" << param.preTrainModel << " sucessfully ！！！---" << endl;
+
+        loadModelParam(snapshot_model);  //加载模型参数
+    }
+
 }
 
 void Net::trainNet(NetParameter& param)
@@ -157,7 +179,7 @@ void Net::trainNet(NetParameter& param)
     cout << "num_batchs(iterations) = " << num_batchs << endl;
 
     //for (int iter = 0; iter < num_batchs; ++iter)
-    for (int iter = 0; iter < 50; ++iter)
+    for (int iter = 0; iter < 5; ++iter)
     {
         //----------step1. 从整个训练集中获取一个mini-batch
         shared_ptr<Blob> X_batch;
@@ -175,6 +197,26 @@ void Net::trainNet(NetParameter& param)
         evaluate_with_batch(param);
         printf("iter_%d    lr: %0.6f    loss: %f    train_acc: %0.2f%%    val_acc: %0.2f%%\n",
                iter,			param.lr,	  loss_,        train_accu_ * 100,         val_accu_ * 100);
+
+        //----------step4.保存模型快照 https://blog.csdn.net/u011334621/article/details/51735418
+        if (iter > 0 && param.snap_shot    &&     iter % param.snapshot_interval == 0)
+        {
+            //(1).定义输出文件outputFile
+            char outputFile[40];
+            sprintf(outputFile, "./iter%d.model", iter);
+            fstream output(outputFile, ios::out | ios::trunc | ios::binary);//若此文件存在则先删除再创建，不存在就直接创建！
+
+            //(2).把Blob中的参数保存到（proto定义的）snapshotModel这个数据结构中！
+            shared_ptr<MyCaffe::Snapshot> snapshot_model(new MyCaffe::Snapshot);
+            saveModelParam(snapshot_model);
+
+            //(3).调用SerializeToOstream()函数将snapshotModel里面的数据写成一个二进制文件outputFile
+            if (!snapshot_model->SerializeToOstream(&output))   //将数据结构中的w和b中以protobuf协议写入一个文件
+            {
+                cout << "Failed to Serialize snapshot_model To Ostream." << endl;  //模型权重（偏置）参数保存失败
+                return;
+            }
+        }
     }
 
 }
@@ -289,4 +331,139 @@ double Net::calc_accuracy(Blob& Y, Blob& Predict)
             right_cnt++;
     }
     return (double)right_cnt / (double)N;   //计算准确率，返回（准确率=正确个数/总样本数）
+}
+
+void Net::saveModelParam(shared_ptr<MyCaffe::Snapshot>& snapshot_model)
+{
+    cout << endl << "/////////////////////////////// 打印Blob（w和b） /////////////////////////////////" << endl << endl;
+    for (auto lname : layers_)    //for lname in layers_
+    {
+        //(1).跳过没有w和b的层
+        if (!data_[lname][1] || !data_[lname][2])
+        {
+            continue;  //跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
+        }
+        cout << "-----" << lname << "-----" << endl;
+        for (int i = 1; i <= 2; ++i)
+        {
+            cout << "-----" << (i==1 ? "WEIGHT" : "BIAS") << "-----" << endl;
+            data_[lname][i]->print();
+        }
+    }
+
+
+
+    for (auto lname : layers_)    //for lname in layers_
+    {
+        //(1).跳过没有w和b的层
+        if (!data_[lname][1] || !data_[lname][2])
+        {
+            continue;  //跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
+        }
+
+        //(2).取出相关Blob中的所有参数，填入snapshotModel中！
+        for (int i = 1; i <= 2; ++i)
+        {
+            MyCaffe::Snapshot::ParamBlok*  param_blok = snapshot_model->add_param_blok();   //（动态）添加一个paramBlock
+            int N = data_[lname][i]->get_N();			  //权重（偏置）核个数
+            int C = data_[lname][i]->get_C();            //权重（偏置）核通道数
+            int H = data_[lname][i]->get_H();			  //权重（偏置）核高
+            int W = data_[lname][i]->get_W();		  //权重（偏置）核宽
+            param_blok->set_kernel_n(N);
+            param_blok->set_kernel_c(C);
+            param_blok->set_kernel_h(H);
+            param_blok->set_kernel_w(W);
+            param_blok->set_layer_name(lname);
+            if (i == 1)
+            {
+                param_blok->set_param_type("WEIGHT"); //写入参数类型
+                cout << lname << " : WEIGHT  " << "（" << N << "," << C << "," << H << "," << W << "）" << endl;
+            }
+            else
+            {
+                param_blok->set_param_type("BIAS");
+                cout << lname << " : BIAS  " << "（" << N << "," << C << "," << H << "," << W << "）" << endl;
+            }
+            for (int n = 0; n<N; ++n)
+            {
+                for (int c = 0; c < C; ++c)
+                {
+                    for (int h = 0; h<H; ++h)
+                    {
+                        for (int w = 0; w<W; ++w)
+                        {
+                            MyCaffe::Snapshot::ParamBlok::ParamValue*  param_value = param_blok->add_param_value();   //（动态）添加一个paramValue
+                            param_value->set_value((*data_[lname][i])[n](h, w, c));
+                        }
+                    }
+                }
+            }
+
+        }
+
+
+
+    }
+}
+
+void Net::loadModelParam(const shared_ptr<MyCaffe::Snapshot>& snapshot_model)
+{
+    for (int i = 0; i < snapshot_model->param_blok_size(); ++i)  //逐个取出模型快照中的的paramBlok，填入我们定义的Blob数据结构中
+    {
+        //1. 从snapshot_model逐一取出paramBlok
+        const MyCaffe::Snapshot::ParamBlok& param_blok = snapshot_model->param_blok(i);  //取出对应paramBlok
+
+        //2. 取出paramBlok中的标记型变量
+        string lname = param_blok.layer_name();   //权重（偏置）核所属层名
+        string paramtype = param_blok.param_type();  //权重（偏置）核参数类型（WEIGHT或BIAS）
+        int N = param_blok.kernel_n();			  //权重（偏置）核个数
+        int C = param_blok.kernel_c();            //权重（偏置）核通道数
+        int H = param_blok.kernel_h();			  //权重（偏置）核高
+        int W = param_blok.kernel_w();			  //权重（偏置）核宽
+        cout << lname << "：" << paramtype << " ：（" << N << ", " << C << ", " << H << ", " << W << ")" << endl;
+
+        //3.遍历当前paramBlok中的每一个参数，取出来，填入对应的Blob中！
+        int val_idx = 0;
+        shared_ptr<Blob> simple_blob(new Blob(N, C, H, W));  //中间Blob
+        for (int n = 0; n<N; ++n)
+        {
+            for (int c = 0; c < C; ++c)
+            {
+                for (int h = 0; h<H; ++h)
+                {
+                    for (int w = 0; w<W; ++w)
+                    {
+                        const MyCaffe::Snapshot::ParamBlok::ParamValue& param_value = param_blok.param_value(val_idx);
+                        (*simple_blob)[n](h,w,c)=param_value.value();   //取出某个参数，填入Blob对应位置！
+                        val_idx++;  //param_blok块索引线性增加！
+                    }
+                }
+            }
+        }
+
+        //4. 将simple_blob赋值到data_中
+        if (paramtype == "WEIGHT")
+            data_[lname][1] = simple_blob;
+        else
+            data_[lname][2] = simple_blob;
+
+    }
+
+
+    cout << endl << "/////////////////////////////// 打印Blob（w和b） /////////////////////////////////" << endl << endl;
+    for (auto lname : layers_)    //for lname in layers_
+    {
+        //(1).跳过没有w和b的层
+        if (!data_[lname][1] || !data_[lname][2])
+        {
+            continue;  //跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
+        }
+        cout << "-----" << lname << "-----" << endl;
+        for (int i = 1; i <= 2; ++i)
+        {
+            cout << "-----" << (i == 1 ? "WEIGHT" : "BIAS") << "-----" << endl;
+            data_[lname][i]->print();
+        }
+    }
+
 }

@@ -1,0 +1,26 @@
+//编译命令：protoc -I=./  --cpp_out=./ ./snapshot.proto
+syntax="proto3";
+
+package MyCaffe;    //经过编译后，对应着生成的c++文件中的命名空间
+
+message Snapshot
+{
+	message ParamBlok
+	{
+		string     param_type        = 1;
+		string     layer_name        = 2;
+		int32       kernel_n         = 3;
+		int32       kernel_c         = 4;
+		int32       kernel_h         = 5;
+		int32       kernel_w         = 6;
+
+		message ParamValue
+		{
+			double value = 1;
+		}
+		repeated ParamValue param_value       = 7;
+	}
+
+   repeated ParamBlok param_blok = 1;
+
+}

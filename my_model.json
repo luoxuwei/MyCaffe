@@ -4,7 +4,7 @@
 	//json中，对象的元素是“键值对”
 	"train":{
 		// 初始学习率
-		"learning rate" : 0.05,
+		"learning rate" : 0.01,
 		// 学习率衰减: 通常设置为 0.99
 		"lr decay": 0.999,
 		// 优化策略: sgd/momentum/rmsprop
@@ -24,20 +24,20 @@
 		// 是否需要保存模型快照？ true/false
 		"snapshot": false,
 		// 每隔几个迭代周期保存一次快照？
-		"snapshot interval": 10,
+		"snapshot interval": 5,
 		// 是否以fine_tune方式训练？ true/false
-		"fine tune": false,
+		"fine tune": true,
 		// 预训练参数模型所在路径
-		"pre train model": "./iter20.gordonmodel"
+		"pre train model": "./iter5.gordonmodel"
 	} ,
 	//json文件中，键值类型可以是：数值，字符串，布尔数，数组
 	"net":[
 		{
 			"name":"conv1",  //层名
 			"type":"Conv",   //层类型
-			"kernel num":3,  //卷积核个数
-			"kernel height":2,  //卷积核高
-			"kernel width":2,   //卷积核宽
+			"kernel num":5,  //卷积核个数
+			"kernel height":5,  //卷积核高
+			"kernel width":5,   //卷积核宽
 			"pad":1,			//填充数
 			"stride":1			//滑动步长
 		},

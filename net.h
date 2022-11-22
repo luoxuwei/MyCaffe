@@ -12,6 +12,7 @@
 
 #include "layer.h"
 #include "blob.h"
+#include "snapshot.pb.h"
 
 using std::unordered_map;
 using std::vector;
@@ -66,6 +67,8 @@ public:
     void optimizer_with_batch(NetParameter& param);
     void evaluate_with_batch(NetParameter& param);
     double calc_accuracy(Blob& Y, Blob& Predict);
+    void saveModelParam(shared_ptr<MyCaffe::Snapshot>& snapshot_model);
+    void loadModelParam(const shared_ptr<MyCaffe::Snapshot>& snapshot_model);
 private:
     // 训练集
     shared_ptr<Blob> X_train_;
