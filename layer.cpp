@@ -450,3 +450,36 @@ void SoftmaxLossLayer::softmax_cross_entropy_with_logits(const vector<shared_ptr
 
     return;
 }
+
+void SVMLossLayer::hinge_with_logits(const vector<shared_ptr<Blob>>& in, double& loss, shared_ptr<Blob>& dout)
+{
+    if (dout)
+        dout.reset();
+    //-------step1.获取相关尺寸
+    int N = in[0]->get_N();        //输入Blob中cube个数（该batch样本个数）
+    int C = in[0]->get_C();         //输入Blob通道数
+    int Hx = in[0]->get_H();      //输入Blob高
+    int Wx = in[0]->get_W();    //输入Blob宽
+    assert(Hx == 1 && Wx == 1);
+    dout.reset(new Blob(N, C, Hx, Wx));   //（N,C,1,1）
+    double loss_ = 0;
+    double delta = 0.2;
+    for (int i = 0; i < N; ++i)
+    {
+        //(1).计算损失
+        int idx_max = (*in[1])[i].index_max();//找出正确类别
+        double positive_x = (*in[0])[i](0, 0, idx_max);//输出类别中的正确类别得分
+        cube tmp = ((*in[0])[i] - positive_x + delta); //代入hinge loss公式 delta应该是超参，先硬编码
+        tmp(0, 0, idx_max) = 0;  //剔除正确类里面的值
+        tmp.transform([](double e) {return e > 0 ? e : 0; });  //做max()操作，得到各个分类的损失
+        loss_ +=arma::accu(tmp);  //得到所有类别的损失和
+
+        //(2).计算梯度
+        tmp.transform([](double e) {return e ? 1 : 0; });//计算掩码，大于0为1，小于0为0
+        tmp(0,0,idx_max)= -arma::accu(tmp);//求正确类别梯度，等于所有错误类别之和加负号
+        (*dout)[i]=tmp;
+
+    }
+    loss = loss_ / N;   //求平均损失
+    return;
+}

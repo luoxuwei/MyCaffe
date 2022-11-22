@@ -239,8 +239,11 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
     }
 
     //------- step3. softmax前向计算和计算代价值
-    //layers_.back()最后一个元素, diff_[layers_.back()][0] 是dx
-    SoftmaxLossLayer::softmax_cross_entropy_with_logits(data_[layers_.back()], loss_, diff_[layers_.back()][0]);
+    if (ltypes_.back()=="Softmax")//layers_.back()最后一个元素, diff_[layers_.back()][0] 是dx
+        SoftmaxLossLayer::softmax_cross_entropy_with_logits(data_[layers_.back()], loss_, diff_[layers_.back()][0]);
+    if (ltypes_.back() == "SVM")
+        SVMLossLayer::hinge_with_logits(data_[layers_.back()], loss_, diff_[layers_.back()][0]);
+
     cout << "loss_=" << loss_ << endl;   //第一次迭代后，损失值约为2.3
 
     if (mode == "TEST")//如果仅用于前向传播（做测试，不训练），则提前退出！不会再执行下面的反向传播和优化

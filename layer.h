@@ -108,4 +108,11 @@ public:
     static void softmax_cross_entropy_with_logits(const vector<shared_ptr<Blob>>& in, double& loss, shared_ptr<Blob>& dout);
 };
 
+class SVMLossLayer
+{
+public:
+    static void hinge_with_logits(const vector<shared_ptr<Blob>>& in, double& loss, shared_ptr<Blob>& dout);
+};
+
+
 #endif //MYCAFFE_LAYER_H

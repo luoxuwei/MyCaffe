@@ -26,7 +26,7 @@
 		// 每隔几个迭代周期保存一次快照？
 		"snapshot interval": 5,
 		// 是否以fine_tune方式训练？ true/false
-		"fine tune": true,
+		"fine tune": false,
 		// 预训练参数模型所在路径
 		"pre train model": "./iter5.gordonmodel"
 	} ,
@@ -58,8 +58,8 @@
 			"kernel num":10 //神经元个数
 		},
 		{
-			"name":"softmax",  //层名
-			"type":"Softmax" //层类型
+			"name":"svm",  //层名
+			"type":"SVM" //层类型
 		}
 	]
 }
