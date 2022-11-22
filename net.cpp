@@ -179,7 +179,7 @@ void Net::trainNet(NetParameter& param)
     cout << "num_batchs(iterations) = " << num_batchs << endl;
 
     //for (int iter = 0; iter < num_batchs; ++iter)
-    for (int iter = 0; iter < 5; ++iter)
+    for (int iter = 0; iter < 50; ++iter)
     {
         //----------step1. 从整个训练集中获取一个mini-batch
         shared_ptr<Blob> X_batch;
@@ -195,11 +195,15 @@ void Net::trainNet(NetParameter& param)
 
         //----------step3. 评估模型当前准确率（训练集和验证集）
         evaluate_with_batch(param);
-        printf("iter_%d    lr: %0.6f    loss: %f    train_acc: %0.2f%%    val_acc: %0.2f%%\n",
-               iter,			param.lr,	  loss_,        train_accu_ * 100,         val_accu_ * 100);
+        printf("iter_%d lr: %0.6f loss: %f train_acc: %0.2f%% val_acc: %0.2f%%\n",
+               iter,
+               param.lr,
+               loss_,
+               train_accu_ * 100,
+               val_accu_ * 100);
 
         //----------step4.保存模型快照 https://blog.csdn.net/u011334621/article/details/51735418
-        if (iter > 0 && param.snap_shot    &&     iter % param.snapshot_interval == 0)
+        if (iter > 0 && param.snap_shot && iter % param.snapshot_interval == 0)
         {
             //(1).定义输出文件outputFile
             char outputFile[40];

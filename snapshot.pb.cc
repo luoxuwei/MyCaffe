@@ -22,8 +22,9 @@ namespace _pbi = _pb::internal;
 
 namespace MyCaffe {
 PROTOBUF_CONSTEXPR Snapshot_ParamBlok_ParamValue::Snapshot_ParamBlok_ParamValue(
-    ::_pbi::ConstantInitialized)
-  : value_(0){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.value_)*/0
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct Snapshot_ParamBlok_ParamValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Snapshot_ParamBlok_ParamValueDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -34,14 +35,15 @@ struct Snapshot_ParamBlok_ParamValueDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Snapshot_ParamBlok_ParamValueDefaultTypeInternal _Snapshot_ParamBlok_ParamValue_default_instance_;
 PROTOBUF_CONSTEXPR Snapshot_ParamBlok::Snapshot_ParamBlok(
-    ::_pbi::ConstantInitialized)
-  : param_value_()
-  , param_type_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , layer_name_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , kernel_n_(0)
-  , kernel_c_(0)
-  , kernel_h_(0)
-  , kernel_w_(0){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.param_value_)*/{}
+  , /*decltype(_impl_.param_type_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.layer_name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.kernel_n_)*/0
+  , /*decltype(_impl_.kernel_c_)*/0
+  , /*decltype(_impl_.kernel_h_)*/0
+  , /*decltype(_impl_.kernel_w_)*/0
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct Snapshot_ParamBlokDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Snapshot_ParamBlokDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -52,8 +54,9 @@ struct Snapshot_ParamBlokDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 Snapshot_ParamBlokDefaultTypeInternal _Snapshot_ParamBlok_default_instance_;
 PROTOBUF_CONSTEXPR Snapshot::Snapshot(
-    ::_pbi::ConstantInitialized)
-  : param_blok_(){}
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.param_blok_)*/{}
+  , /*decltype(_impl_._cached_size_)*/{}} {}
 struct SnapshotDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SnapshotDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -75,27 +78,27 @@ const uint32_t TableStruct_snapshot_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok_ParamValue, value_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok_ParamValue, _impl_.value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, param_type_),
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, layer_name_),
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, kernel_n_),
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, kernel_c_),
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, kernel_h_),
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, kernel_w_),
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, param_value_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, _impl_.param_type_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, _impl_.layer_name_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, _impl_.kernel_n_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, _impl_.kernel_c_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, _impl_.kernel_h_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, _impl_.kernel_w_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot_ParamBlok, _impl_.param_value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot, param_blok_),
+  PROTOBUF_FIELD_OFFSET(::MyCaffe::Snapshot, _impl_.param_blok_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::MyCaffe::Snapshot_ParamBlok_ParamValue)},
@@ -145,18 +148,29 @@ class Snapshot_ParamBlok_ParamValue::_Internal {
 Snapshot_ParamBlok_ParamValue::Snapshot_ParamBlok_ParamValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor();
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:MyCaffe.Snapshot.ParamBlok.ParamValue)
 }
 Snapshot_ParamBlok_ParamValue::Snapshot_ParamBlok_ParamValue(const Snapshot_ParamBlok_ParamValue& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Snapshot_ParamBlok_ParamValue* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  value_ = from.value_;
+  _this->_impl_.value_ = from._impl_.value_;
   // @@protoc_insertion_point(copy_constructor:MyCaffe.Snapshot.ParamBlok.ParamValue)
 }
 
-inline void Snapshot_ParamBlok_ParamValue::SharedCtor() {
-value_ = 0;
+inline void Snapshot_ParamBlok_ParamValue::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.value_){0}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 Snapshot_ParamBlok_ParamValue::~Snapshot_ParamBlok_ParamValue() {
@@ -173,7 +187,7 @@ inline void Snapshot_ParamBlok_ParamValue::SharedDtor() {
 }
 
 void Snapshot_ParamBlok_ParamValue::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void Snapshot_ParamBlok_ParamValue::Clear() {
@@ -182,7 +196,7 @@ void Snapshot_ParamBlok_ParamValue::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = 0;
+  _impl_.value_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -195,7 +209,7 @@ const char* Snapshot_ParamBlok_ParamValue::_InternalParse(const char* ptr, ::_pb
       // double value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 9)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          _impl_.value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
           ptr += sizeof(double);
         } else
           goto handle_unusual;
@@ -264,25 +278,21 @@ size_t Snapshot_ParamBlok_ParamValue::ByteSizeLong() const {
     total_size += 1 + 8;
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Snapshot_ParamBlok_ParamValue::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Snapshot_ParamBlok_ParamValue::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Snapshot_ParamBlok_ParamValue::GetClassData() const { return &_class_data_; }
 
-void Snapshot_ParamBlok_ParamValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Snapshot_ParamBlok_ParamValue *>(to)->MergeFrom(
-      static_cast<const Snapshot_ParamBlok_ParamValue &>(from));
-}
 
-
-void Snapshot_ParamBlok_ParamValue::MergeFrom(const Snapshot_ParamBlok_ParamValue& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:MyCaffe.Snapshot.ParamBlok.ParamValue)
-  GOOGLE_DCHECK_NE(&from, this);
+void Snapshot_ParamBlok_ParamValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Snapshot_ParamBlok_ParamValue*>(&to_msg);
+  auto& from = static_cast<const Snapshot_ParamBlok_ParamValue&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:MyCaffe.Snapshot.ParamBlok.ParamValue)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -291,9 +301,9 @@ void Snapshot_ParamBlok_ParamValue::MergeFrom(const Snapshot_ParamBlok_ParamValu
   uint64_t raw_value;
   memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
   if (raw_value != 0) {
-    _internal_set_value(from._internal_value());
+    _this->_internal_set_value(from._internal_value());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Snapshot_ParamBlok_ParamValue::CopyFrom(const Snapshot_ParamBlok_ParamValue& from) {
@@ -310,7 +320,7 @@ bool Snapshot_ParamBlok_ParamValue::IsInitialized() const {
 void Snapshot_ParamBlok_ParamValue::InternalSwap(Snapshot_ParamBlok_ParamValue* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(value_, other->value_);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Snapshot_ParamBlok_ParamValue::GetMetadata() const {
@@ -327,50 +337,68 @@ class Snapshot_ParamBlok::_Internal {
 
 Snapshot_ParamBlok::Snapshot_ParamBlok(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
-  param_value_(arena) {
-  SharedCtor();
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:MyCaffe.Snapshot.ParamBlok)
 }
 Snapshot_ParamBlok::Snapshot_ParamBlok(const Snapshot_ParamBlok& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-      param_value_(from.param_value_) {
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Snapshot_ParamBlok* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.param_value_){from._impl_.param_value_}
+    , decltype(_impl_.param_type_){}
+    , decltype(_impl_.layer_name_){}
+    , decltype(_impl_.kernel_n_){}
+    , decltype(_impl_.kernel_c_){}
+    , decltype(_impl_.kernel_h_){}
+    , decltype(_impl_.kernel_w_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  param_type_.InitDefault();
+  _impl_.param_type_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    param_type_.Set("", GetArenaForAllocation());
+    _impl_.param_type_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_param_type().empty()) {
-    param_type_.Set(from._internal_param_type(), 
-      GetArenaForAllocation());
+    _this->_impl_.param_type_.Set(from._internal_param_type(), 
+      _this->GetArenaForAllocation());
   }
-  layer_name_.InitDefault();
+  _impl_.layer_name_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    layer_name_.Set("", GetArenaForAllocation());
+    _impl_.layer_name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (!from._internal_layer_name().empty()) {
-    layer_name_.Set(from._internal_layer_name(), 
-      GetArenaForAllocation());
+    _this->_impl_.layer_name_.Set(from._internal_layer_name(), 
+      _this->GetArenaForAllocation());
   }
-  ::memcpy(&kernel_n_, &from.kernel_n_,
-    static_cast<size_t>(reinterpret_cast<char*>(&kernel_w_) -
-    reinterpret_cast<char*>(&kernel_n_)) + sizeof(kernel_w_));
+  ::memcpy(&_impl_.kernel_n_, &from._impl_.kernel_n_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.kernel_w_) -
+    reinterpret_cast<char*>(&_impl_.kernel_n_)) + sizeof(_impl_.kernel_w_));
   // @@protoc_insertion_point(copy_constructor:MyCaffe.Snapshot.ParamBlok)
 }
 
-inline void Snapshot_ParamBlok::SharedCtor() {
-param_type_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  param_type_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-layer_name_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  layer_name_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&kernel_n_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&kernel_w_) -
-    reinterpret_cast<char*>(&kernel_n_)) + sizeof(kernel_w_));
+inline void Snapshot_ParamBlok::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.param_value_){arena}
+    , decltype(_impl_.param_type_){}
+    , decltype(_impl_.layer_name_){}
+    , decltype(_impl_.kernel_n_){0}
+    , decltype(_impl_.kernel_c_){0}
+    , decltype(_impl_.kernel_h_){0}
+    , decltype(_impl_.kernel_w_){0}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+  _impl_.param_type_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.param_type_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.layer_name_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.layer_name_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 Snapshot_ParamBlok::~Snapshot_ParamBlok() {
@@ -384,12 +412,13 @@ Snapshot_ParamBlok::~Snapshot_ParamBlok() {
 
 inline void Snapshot_ParamBlok::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  param_type_.Destroy();
-  layer_name_.Destroy();
+  _impl_.param_value_.~RepeatedPtrField();
+  _impl_.param_type_.Destroy();
+  _impl_.layer_name_.Destroy();
 }
 
 void Snapshot_ParamBlok::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void Snapshot_ParamBlok::Clear() {
@@ -398,12 +427,12 @@ void Snapshot_ParamBlok::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  param_value_.Clear();
-  param_type_.ClearToEmpty();
-  layer_name_.ClearToEmpty();
-  ::memset(&kernel_n_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&kernel_w_) -
-      reinterpret_cast<char*>(&kernel_n_)) + sizeof(kernel_w_));
+  _impl_.param_value_.Clear();
+  _impl_.param_type_.ClearToEmpty();
+  _impl_.layer_name_.ClearToEmpty();
+  ::memset(&_impl_.kernel_n_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.kernel_w_) -
+      reinterpret_cast<char*>(&_impl_.kernel_n_)) + sizeof(_impl_.kernel_w_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -436,7 +465,7 @@ const char* Snapshot_ParamBlok::_InternalParse(const char* ptr, ::_pbi::ParseCon
       // int32 kernel_n = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
-          kernel_n_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.kernel_n_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -444,7 +473,7 @@ const char* Snapshot_ParamBlok::_InternalParse(const char* ptr, ::_pbi::ParseCon
       // int32 kernel_c = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
-          kernel_c_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.kernel_c_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -452,7 +481,7 @@ const char* Snapshot_ParamBlok::_InternalParse(const char* ptr, ::_pbi::ParseCon
       // int32 kernel_h = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
-          kernel_h_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.kernel_h_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -460,7 +489,7 @@ const char* Snapshot_ParamBlok::_InternalParse(const char* ptr, ::_pbi::ParseCon
       // int32 kernel_w = 6;
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
-          kernel_w_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.kernel_w_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -577,7 +606,7 @@ size_t Snapshot_ParamBlok::ByteSizeLong() const {
 
   // repeated .MyCaffe.Snapshot.ParamBlok.ParamValue param_value = 7;
   total_size += 1UL * this->_internal_param_value_size();
-  for (const auto& msg : this->param_value_) {
+  for (const auto& msg : this->_impl_.param_value_) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
@@ -616,48 +645,44 @@ size_t Snapshot_ParamBlok::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_kernel_w());
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Snapshot_ParamBlok::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Snapshot_ParamBlok::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Snapshot_ParamBlok::GetClassData() const { return &_class_data_; }
 
-void Snapshot_ParamBlok::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Snapshot_ParamBlok *>(to)->MergeFrom(
-      static_cast<const Snapshot_ParamBlok &>(from));
-}
 
-
-void Snapshot_ParamBlok::MergeFrom(const Snapshot_ParamBlok& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:MyCaffe.Snapshot.ParamBlok)
-  GOOGLE_DCHECK_NE(&from, this);
+void Snapshot_ParamBlok::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Snapshot_ParamBlok*>(&to_msg);
+  auto& from = static_cast<const Snapshot_ParamBlok&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:MyCaffe.Snapshot.ParamBlok)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  param_value_.MergeFrom(from.param_value_);
+  _this->_impl_.param_value_.MergeFrom(from._impl_.param_value_);
   if (!from._internal_param_type().empty()) {
-    _internal_set_param_type(from._internal_param_type());
+    _this->_internal_set_param_type(from._internal_param_type());
   }
   if (!from._internal_layer_name().empty()) {
-    _internal_set_layer_name(from._internal_layer_name());
+    _this->_internal_set_layer_name(from._internal_layer_name());
   }
   if (from._internal_kernel_n() != 0) {
-    _internal_set_kernel_n(from._internal_kernel_n());
+    _this->_internal_set_kernel_n(from._internal_kernel_n());
   }
   if (from._internal_kernel_c() != 0) {
-    _internal_set_kernel_c(from._internal_kernel_c());
+    _this->_internal_set_kernel_c(from._internal_kernel_c());
   }
   if (from._internal_kernel_h() != 0) {
-    _internal_set_kernel_h(from._internal_kernel_h());
+    _this->_internal_set_kernel_h(from._internal_kernel_h());
   }
   if (from._internal_kernel_w() != 0) {
-    _internal_set_kernel_w(from._internal_kernel_w());
+    _this->_internal_set_kernel_w(from._internal_kernel_w());
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Snapshot_ParamBlok::CopyFrom(const Snapshot_ParamBlok& from) {
@@ -676,21 +701,21 @@ void Snapshot_ParamBlok::InternalSwap(Snapshot_ParamBlok* other) {
   auto* lhs_arena = GetArenaForAllocation();
   auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  param_value_.InternalSwap(&other->param_value_);
+  _impl_.param_value_.InternalSwap(&other->_impl_.param_value_);
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &param_type_, lhs_arena,
-      &other->param_type_, rhs_arena
+      &_impl_.param_type_, lhs_arena,
+      &other->_impl_.param_type_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &layer_name_, lhs_arena,
-      &other->layer_name_, rhs_arena
+      &_impl_.layer_name_, lhs_arena,
+      &other->_impl_.layer_name_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(Snapshot_ParamBlok, kernel_w_)
-      + sizeof(Snapshot_ParamBlok::kernel_w_)
-      - PROTOBUF_FIELD_OFFSET(Snapshot_ParamBlok, kernel_n_)>(
-          reinterpret_cast<char*>(&kernel_n_),
-          reinterpret_cast<char*>(&other->kernel_n_));
+      PROTOBUF_FIELD_OFFSET(Snapshot_ParamBlok, _impl_.kernel_w_)
+      + sizeof(Snapshot_ParamBlok::_impl_.kernel_w_)
+      - PROTOBUF_FIELD_OFFSET(Snapshot_ParamBlok, _impl_.kernel_n_)>(
+          reinterpret_cast<char*>(&_impl_.kernel_n_),
+          reinterpret_cast<char*>(&other->_impl_.kernel_n_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Snapshot_ParamBlok::GetMetadata() const {
@@ -707,19 +732,29 @@ class Snapshot::_Internal {
 
 Snapshot::Snapshot(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
-  param_blok_(arena) {
-  SharedCtor();
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
   // @@protoc_insertion_point(arena_constructor:MyCaffe.Snapshot)
 }
 Snapshot::Snapshot(const Snapshot& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-      param_blok_(from.param_blok_) {
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  Snapshot* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.param_blok_){from._impl_.param_blok_}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:MyCaffe.Snapshot)
 }
 
-inline void Snapshot::SharedCtor() {
+inline void Snapshot::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.param_blok_){arena}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
 }
 
 Snapshot::~Snapshot() {
@@ -733,10 +768,11 @@ Snapshot::~Snapshot() {
 
 inline void Snapshot::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.param_blok_.~RepeatedPtrField();
 }
 
 void Snapshot::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
+  _impl_._cached_size_.Set(size);
 }
 
 void Snapshot::Clear() {
@@ -745,7 +781,7 @@ void Snapshot::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  param_blok_.Clear();
+  _impl_.param_blok_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -823,35 +859,31 @@ size_t Snapshot::ByteSizeLong() const {
 
   // repeated .MyCaffe.Snapshot.ParamBlok param_blok = 1;
   total_size += 1UL * this->_internal_param_blok_size();
-  for (const auto& msg : this->param_blok_) {
+  for (const auto& msg : this->_impl_.param_blok_) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Snapshot::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
     Snapshot::MergeImpl
 };
 const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Snapshot::GetClassData() const { return &_class_data_; }
 
-void Snapshot::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<Snapshot *>(to)->MergeFrom(
-      static_cast<const Snapshot &>(from));
-}
 
-
-void Snapshot::MergeFrom(const Snapshot& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:MyCaffe.Snapshot)
-  GOOGLE_DCHECK_NE(&from, this);
+void Snapshot::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<Snapshot*>(&to_msg);
+  auto& from = static_cast<const Snapshot&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:MyCaffe.Snapshot)
+  GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  param_blok_.MergeFrom(from.param_blok_);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.param_blok_.MergeFrom(from._impl_.param_blok_);
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Snapshot::CopyFrom(const Snapshot& from) {
@@ -868,7 +900,7 @@ bool Snapshot::IsInitialized() const {
 void Snapshot::InternalSwap(Snapshot* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  param_blok_.InternalSwap(&other->param_blok_);
+  _impl_.param_blok_.InternalSwap(&other->_impl_.param_blok_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Snapshot::GetMetadata() const {

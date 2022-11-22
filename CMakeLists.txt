@@ -6,7 +6,8 @@ include_directories(.)
 add_library(mycaffe-core SHARED
         net.cpp
         blob.cpp
-        layer.cpp)
+        layer.cpp
+        snapshot.pb.cc)
 
 find_library(
         armadillo-lib
