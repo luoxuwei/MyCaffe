@@ -24,7 +24,7 @@ struct NetParameter {
     /*学习率衰减系数*/
     double lr_decay;
     /*优化算法,:sgd/momentum/rmsprop*/
-    string update;
+    std::string optimizer;
     /*momentum系数 */
     double momentum;
     /*epoch次数 */
@@ -62,7 +62,10 @@ class Net
 public:
     void initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<shared_ptr<Blob>>& Y);
     void trainNet(NetParameter& param);
-    void train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParameter& param);
+    void train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParameter& param, string mode="TRAIN");
+    void optimizer_with_batch(NetParameter& param);
+    void evaluate_with_batch(NetParameter& param);
+    double calc_accuracy(Blob& Y, Blob& Predict);
 private:
     // 训练集
     shared_ptr<Blob> X_train_;
@@ -75,6 +78,8 @@ private:
     vector<string> layers_;  //层名
     vector<string> ltypes_; //层类型
     double loss_;
+    double train_accu_;
+    double val_accu_;
     //
     unordered_map<string, vector<shared_ptr<Blob>>> data_;    //前向计算需要用到的Blob data_[0]=X,  data_[1]=W,data_[2] = b;
     unordered_map<string, vector<shared_ptr<Blob>>> diff_;    //反向计算需要用到的Blob diff_[0]=dX,  diff_[1]=dW,diff_[2] = db;

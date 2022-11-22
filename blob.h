@@ -38,6 +38,8 @@ public:
     Blob& operator*= (const double i);
     Blob& operator= (double val);
     friend Blob operator*(Blob& A, Blob& B);  //声明为友元函数
+    friend Blob operator*(double num, Blob& B);  //声明为友元函数
+    friend Blob operator+(Blob& A, Blob& B);  //声明为友元函数
     Blob subBlob(int low_idx, int high_idx);
     Blob pad(int pad,double val=0);
     Blob deletePad(int pad);

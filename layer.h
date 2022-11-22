@@ -99,7 +99,7 @@ public:
     void backward(const shared_ptr<Blob>& din,
                   const vector<shared_ptr<Blob>>& cache,
                   vector<shared_ptr<Blob>>& grads,
-                  const LayerParameter& param)
+                  const LayerParameter& param);
 };
 
 class SoftmaxLossLayer

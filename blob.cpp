@@ -108,6 +108,36 @@ Blob operator*(Blob& A, Blob& B)  //友元函数的具体实现：这里没有�
     return C;
 }
 
+Blob operator*(double num, Blob& B)
+{
+    //遍历所有的cube，每一个cube都乘上一个数值num
+    int N =B.get_N();
+    Blob out(B.size());
+    for (int i = 0; i < N; ++i)
+    {
+        out[i] = num * B[i];
+    }
+    return out;
+}
+
+Blob operator+(Blob& A, Blob& B)
+{
+    //(1). 确保两个输入Blob尺寸一样
+    vector<int> size_A = A.size();
+    vector<int> size_B = B.size();
+    for (int i = 0; i < 4; ++i)
+    {
+        assert(size_A[i] == size_B[i]);  //断言：两个输入Blob的尺寸（N,C,H,W）一样！
+    }
+    //(2). 遍历所有的cube，每一个cube做对应位置相加（cube + cube）
+    int N = size_A[0];
+    Blob C(A.size());
+    for (int i = 0; i < N; ++i)
+    {
+        C[i] = A[i] + B[i];
+    }
+    return C;
+}
 
 vector<cube>& Blob::get_data()
 {
