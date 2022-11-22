@@ -11,14 +11,14 @@ using namespace arma;
 Blob::Blob(const int n, const int c, const int h, const int w, int type) : N_(n), C_(c), H_(h), W_(w)
 {
     //当前系统时间作为伪随机数的生成种子
-    arma_rng::set_seed_random();  //系统随机生成种子(如果没有这一句，就会每次启动程序(进程)时都默认从种子1开始来生成随机数！就是每次都是一样的值。
+    arma_rng::set_seed_random();//系统随机生成种子(如果没有这一句，就会每次启动程序(进程)时都默认从种子1开始来生成随机数！就是每次都是一样的值。
     _init(N_, C_, H_, W_, type);
 
 }
 
 Blob::Blob(const vector<int> shape_, int type) : N_(shape_[0]), C_(shape_[1]), H_(shape_[2]), W_(shape_[3])
 {
-    arma_rng::set_seed_random();  //系统随机生成种子(如果没有这一句，就会每次启动程序(进程)时都默认从种子1开始来生成随机数！
+    arma_rng::set_seed_random();//系统随机生成种子(如果没有这一句，就会每次启动程序(进程)时都默认从种子1开始来生成随机数！
     _init(N_, C_, H_, W_, type);
 }
 
@@ -42,13 +42,13 @@ void Blob::_init(const int n, const int c, const int h, const int w, int type)
     }
     if (type == TRANDU)
     {
-        for (int i = 0; i < n; ++i)   //生成n个填充了随机值（均匀分布）的cube
+        for (int i = 0; i < n; ++i)//生成n个填充了随机值（均匀分布）的cube
             blob_data.push_back(arma::randu<cube>(h, w, c));
         return;
     }
     if (type == TRANDN)
     {
-        for (int i = 0; i < n; ++i)   //生成n个填充了随机值(标准高斯分布）的cube
+        for (int i = 0; i < n; ++i)//生成n个填充了随机值(标准高斯分布）的cube
             blob_data.push_back(arma::randn<cube>(h, w, c));
         return;
     }
@@ -57,9 +57,9 @@ void Blob::_init(const int n, const int c, const int h, const int w, int type)
 
 void Blob::print(string str)
 {
-    assert(!blob_data.empty());  //断言：blob_data不为空！否则中止程序，因为下面用到了，最好验证一下。
+    assert(!blob_data.empty());//断言：blob_data不为空！否则中止程序，因为下面用到了，最好验证一下。
     cout << str << endl;
-    for (int i = 0; i < N_; ++i)  //N_为blob_data中cube个数
+    for (int i = 0; i < N_; ++i)//N_为blob_data中cube个数
     {
         printf("N = %d\n", i);
         this->blob_data[i].print();//逐一打印cube，调用cube中重载好的print()
@@ -75,7 +75,7 @@ Blob& Blob::operator*= (const double k)
 {
     for (int i = 0; i < N_; ++i)
     {
-        blob_data[i] = blob_data[i] * k;   //调用cube中实现的*操作符
+        blob_data[i] = blob_data[i] * k;//调用cube中实现的*操作符
     }
     return *this;
 }
@@ -84,19 +84,19 @@ Blob& Blob::operator= (double val)
 {
     for (int i = 0; i < N_; ++i)
     {
-        blob_data[i].fill(val);   //调用cube中实现的*操作符
+        blob_data[i].fill(val);//调用cube中实现的*操作符
     }
     return *this;
 }
 
-Blob operator*(Blob& A, Blob& B)  //友元函数的具体实现：这里没有类限定例如 (Blob& Blob::)这种形式
+Blob operator*(Blob& A, Blob& B)//友元函数的具体实现：这里没有类限定例如 (Blob& Blob::)这种形式
 {
     //(1). 确保两个输入Blob尺寸一样
     vector<int> size_A = A.size();
     vector<int> size_B = B.size();
     for (int i = 0; i < 4; ++i)
     {
-        assert(size_A[i] == size_B[i]);  //断言：两个输入Blob的尺寸（N,C,H,W）一样！
+        assert(size_A[i] == size_B[i]);//断言：两个输入Blob的尺寸（N,C,H,W）一样！
     }
     //(2). 遍历所有的cube，每一个cube做对应位置相乘（cube % cube）
     int N = size_A[0];
@@ -127,7 +127,7 @@ Blob operator+(Blob& A, Blob& B)
     vector<int> size_B = B.size();
     for (int i = 0; i < 4; ++i)
     {
-        assert(size_A[i] == size_B[i]);  //断言：两个输入Blob的尺寸（N,C,H,W）一样！
+        assert(size_A[i] == size_B[i]);//断言：两个输入Blob的尺寸（N,C,H,W）一样！
     }
     //(2). 遍历所有的cube，每一个cube做对应位置相加（cube + cube）
     int N = size_A[0];
@@ -149,7 +149,7 @@ Blob Blob::subBlob(int low_idx, int high_idx)
     //举例： [0,1,2,3,4,5]  -> [1,3)  -> [1,2]
     if (high_idx > low_idx)
     {
-        Blob tmp(high_idx - low_idx, C_, H_, W_);  // high_idx > low_idx
+        Blob tmp(high_idx - low_idx, C_, H_, W_);// high_idx > low_idx
         for (int i = low_idx; i < high_idx; ++i)
         {
             tmp[i - low_idx] = (*this)[i];
@@ -161,11 +161,11 @@ Blob Blob::subBlob(int low_idx, int high_idx)
         // low_idx >high_idx
         //举例： [0,1,2,3,4,5]  -> [3,2)-> (6 - 3) + (2 -0) -> [3,4,5,0]
         Blob tmp(N_ - low_idx + high_idx, C_, H_, W_);
-        for (int i = low_idx; i < N_; ++i)   //分开两段截取：先截取第一段
+        for (int i = low_idx; i < N_; ++i)//分开两段截取：先截取第一段
         {
             tmp[i - low_idx] = (*this)[i];
         }
-        for (int i = 0; i < high_idx; ++i)   //分开两段截取：再截取循环到从0开始的这段
+        for (int i = 0; i < high_idx; ++i)//分开两段截取：再截取循环到从0开始的这段
         {
             tmp[i + N_ - low_idx] = (*this)[i];
         }
@@ -175,7 +175,7 @@ Blob Blob::subBlob(int low_idx, int high_idx)
 
 Blob Blob::pad(int pad, double val)
 {
-    assert(!blob_data.empty());   //Blob自身不为空
+    assert(!blob_data.empty());//Blob自身不为空
     Blob padX(N_, C_, H_ + 2 * pad, W_ + 2 * pad);
     padX = val;
     for (int n = 0; n < N_; ++n)
@@ -197,7 +197,7 @@ Blob Blob::pad(int pad, double val)
 
 Blob Blob::deletePad(int pad)
 {
-    assert(!blob_data.empty());   //断言：Blob自身不为空
+    assert(!blob_data.empty());//断言：Blob自身不为空
     Blob out(N_, C_, H_ - 2 * pad, W_ - 2 * pad);
     for (int n = 0; n < N_; ++n)
     {

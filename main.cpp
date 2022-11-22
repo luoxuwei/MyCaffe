@@ -12,7 +12,7 @@ using namespace std;
 /*转换字节序，加载mnist数据集时，需要把大端数据转换为我们常用的小端数据*/
 int ReverseInt(int i)
 {
-    unsigned char ch1, ch2, ch3, ch4;  //int的4个字节
+    unsigned char ch1, ch2, ch3, ch4;//int的4个字节
     ch1 = i & 255;
     ch2 = (i >> 8) & 255;
     ch3 = (i >> 16) & 255;
@@ -33,7 +33,7 @@ void ReadMnistData(string path, shared_ptr<Blob> &images)
         int n_rows = 0;
         int n_cols = 0;
         file.read((char*)&magic_number, sizeof(magic_number));
-        magic_number = ReverseInt(magic_number);  //高低字节调换
+        magic_number = ReverseInt(magic_number);//高低字节调换
         cout << "magic_number=" << magic_number << endl;
         file.read((char*)&number_of_images, sizeof(number_of_images));
         number_of_images = ReverseInt(number_of_images);
@@ -46,15 +46,15 @@ void ReadMnistData(string path, shared_ptr<Blob> &images)
         cout << "n_cols=" << n_cols << endl;
 
         //2.将图片转为Blob存储
-        for (int i = 0; i<number_of_images; ++i)  //遍历所有图片
+        for (int i = 0; i<number_of_images; ++i)//遍历所有图片
         {
-            for (int h = 0; h<n_rows; ++h)   //遍历高
+            for (int h = 0; h<n_rows; ++h)//遍历高
             {
-                for (int w = 0; w<n_cols; ++w)   //遍历宽
+                for (int w = 0; w<n_cols; ++w)//遍历宽
                 {
                     unsigned char temp = 0;
-                    file.read((char*)&temp, sizeof(temp));      //读入一个像素值！
-                    (*images)[i](h, w, 0) = (double)temp / 255; //除以255，做归一化
+                    file.read((char*)&temp, sizeof(temp));//读入一个像素值！
+                    (*images)[i](h, w, 0) = (double)temp / 255;//除以255，做归一化
                 }
             }
         }
@@ -102,7 +102,7 @@ void trainModel(string configFile, shared_ptr<Blob> X, shared_ptr<Blob> Y)
     net_param.readNetParam(configFile);
 
     //1. 将60000张图片以59:1的比例划分为训练集（59000张）和验证集（1000张）
-    shared_ptr<Blob> X_train(new Blob(X->subBlob(0,59000)));  //左闭右开区间，即[ 0, 59000 )
+    shared_ptr<Blob> X_train(new Blob(X->subBlob(0,59000)));//左闭右开区间，即[ 0, 59000 )
     shared_ptr<Blob> Y_train(new Blob(Y->subBlob(0, 59000)));
     shared_ptr<Blob> X_val(new Blob(X->subBlob(59000, 60000)));
     shared_ptr<Blob> Y_val(new Blob(Y->subBlob(59000, 60000)));
@@ -125,8 +125,8 @@ void trainModel(string configFile, shared_ptr<Blob> X, shared_ptr<Blob> Y)
 int main(int argc, char** argv) {
     //创建两个Blob对象，一个用来存储图片特征值（数据），另一个用来存储标签值
     shared_ptr<Blob> images(new Blob(60000, 1, 28, 28, TZEROS));
-    shared_ptr<Blob> labels(new Blob(60000, 10, 1, 1, TZEROS));  //保存one-hot编码的标签值
-    ReadMnistData("mnist_data/train/train-images.idx3-ubyte", images);  //读取data
-    ReadMnistLabel("mnist_data/train/train-labels.idx1-ubyte", labels);   //读取label
+    shared_ptr<Blob> labels(new Blob(60000, 10, 1, 1, TZEROS));//保存one-hot编码的标签值
+    ReadMnistData("mnist_data/train/train-images.idx3-ubyte", images);//读取data
+    ReadMnistLabel("mnist_data/train/train-labels.idx1-ubyte", labels);//读取label
     trainModel("./my_model.json", images, labels);
 }

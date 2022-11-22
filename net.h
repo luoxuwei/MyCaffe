@@ -70,24 +70,24 @@ public:
     void saveModelParam(shared_ptr<MyCaffe::Snapshot>& snapshot_model);
     void loadModelParam(const shared_ptr<MyCaffe::Snapshot>& snapshot_model);
 private:
-    // 训练集
+    //训练集
     shared_ptr<Blob> X_train_;
     shared_ptr<Blob> Y_train_;
-    // 验证集
+    //验证集
     shared_ptr<Blob> X_val_;
     shared_ptr<Blob> Y_val_;
 
 
-    vector<string> layers_;  //层名
-    vector<string> ltypes_; //层类型
+    vector<string> layers_;//层名
+    vector<string> ltypes_;//层类型
     double loss_;
     double train_accu_;
     double val_accu_;
-    //
-    unordered_map<string, vector<shared_ptr<Blob>>> data_;    //前向计算需要用到的Blob data_[0]=X,  data_[1]=W,data_[2] = b;
-    unordered_map<string, vector<shared_ptr<Blob>>> diff_;    //反向计算需要用到的Blob diff_[0]=dX,  diff_[1]=dW,diff_[2] = db;
+
+    unordered_map<string, vector<shared_ptr<Blob>>> data_;//前向计算需要用到的Blob data_[0]=X,  data_[1]=W,data_[2] = b;
+    unordered_map<string, vector<shared_ptr<Blob>>> diff_;//反向计算需要用到的Blob diff_[0]=dX,  diff_[1]=dW,diff_[2] = db;
     unordered_map<string, shared_ptr<Layer>> myLayers_;
-    unordered_map<string,vector<int>> outShapes_;    //存储每一层的输出尺寸
+    unordered_map<string,vector<int>> outShapes_;//存储每一层的输出尺寸
 };
 
 #endif //MYCAFFE_NET_H

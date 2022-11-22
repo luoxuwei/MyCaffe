@@ -14,7 +14,7 @@ void NetParameter::readNetParam(std::string file) {
     ifs.open(file);
     assert(ifs.is_open());
     Json::Reader reader;  /*解析器*/
-    Json::Value value;      /*存储器,解析器解析出来的值就存在value对象里*/
+    Json::Value value;    /*存储器,解析器解析出来的值就存在value对象里*/
     if (reader.parse(ifs, value))
     {
         if (!value["train"].isNull())
@@ -42,8 +42,8 @@ void NetParameter::readNetParam(std::string file) {
             for (int i = 0; i < (int)nparam.size(); ++i)
             {
                 auto &ii = nparam[i];
-                this->layers.push_back(ii["name"].asString());  //层名称
-                this->ltypes.push_back(ii["type"].asString());   //层类型
+                this->layers.push_back(ii["name"].asString());//层名称
+                this->ltypes.push_back(ii["type"].asString());//层类型
 
                 if (ii["type"].asString() == "Conv")
                 {
@@ -157,14 +157,14 @@ void Net::initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<share
         }
 
         shared_ptr<MyCaffe::Snapshot>  snapshot_model(new MyCaffe::Snapshot);
-        if (!snapshot_model->ParseFromIstream(&input))  //解析预训练模型（protobuf提供的方法）
+        if (!snapshot_model->ParseFromIstream(&input))//解析预训练模型（protobuf提供的方法）
         {
             cout<< "Failed to parse the " << param.preTrainModel << " ！！！" << endl;
             return;
         }
         cout << "--- Load the" << param.preTrainModel << " sucessfully ！！！---" << endl;
 
-        loadModelParam(snapshot_model);  //加载模型参数
+        loadModelParam(snapshot_model);//加载模型参数
     }
 
 }
@@ -173,9 +173,9 @@ void Net::trainNet(NetParameter& param)
 {
     int N = X_train_->get_N();
     cout << "N = " << N << endl;
-    int iter_per_epoch = N / param.batch_size;  //59000/200 = 295
+    int iter_per_epoch = N / param.batch_size;//59000/200 = 295
     //总的批次数（迭代次数）= 单个epoch所含批次数 * epoch个数
-    int num_batchs = iter_per_epoch * param.num_epochs;  // 295 * 2 = 590
+    int num_batchs = iter_per_epoch * param.num_epochs;// 295 * 2 = 590
     cout << "num_batchs(iterations) = " << num_batchs << endl;
 
     //for (int iter = 0; iter < num_batchs; ++iter)
@@ -211,9 +211,9 @@ void Net::trainNet(NetParameter& param)
             saveModelParam(snapshot_model);
 
             //(3).调用SerializeToOstream()函数将snapshotModel里面的数据写成一个二进制文件outputFile
-            if (!snapshot_model->SerializeToOstream(&output))   //将数据结构中的w和b中以protobuf协议写入一个文件
+            if (!snapshot_model->SerializeToOstream(&output))//将数据结构中的w和b中以protobuf协议写入一个文件
             {
-                cout << "Failed to Serialize snapshot_model To Ostream." << endl;  //模型权重（偏置）参数保存失败
+                cout << "Failed to Serialize snapshot_model To Ostream." << endl;//模型权重（偏置）参数保存失败
                 return;
             }
         }
@@ -229,8 +229,8 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
     data_[layers_.back()][1] = Y;
 
     //------- step2. 逐层前向计算
-    int n = layers_.size();  //层数
-    for (int i = 0; i < n - 1; ++i) //最后一层单独拧出来
+    int n = layers_.size();//层数
+    for (int i = 0; i < n - 1; ++i)//最后一层单独拧出来
     {
         string lname = layers_[i];
         shared_ptr<Blob> out;
@@ -244,12 +244,12 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
     if (ltypes_.back() == "SVM")
         SVMLossLayer::hinge_with_logits(data_[layers_.back()], loss_, diff_[layers_.back()][0]);
 
-    cout << "loss_=" << loss_ << endl;   //第一次迭代后，损失值约为2.3
+    cout << "loss_=" << loss_ << endl;//第一次迭代后，损失值约为2.3
 
     if (mode == "TEST")//如果仅用于前向传播（做测试，不训练），则提前退出！不会再执行下面的反向传播和优化
         return;
 
-    //------- step4. 逐层反向传播     //conv1<-relu1<-pool1<-fc1<-softmax
+    //------- step4. 逐层反向传播   conv1<-relu1<-pool1<-fc1<-softmax
     //从fc1开始反向传播
     for (int i = n-2; i >= 0; --i)
     {
@@ -266,12 +266,12 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
 void Net::optimizer_with_batch(NetParameter& param)
 {
 
-    for (auto lname : layers_)    //for lname in layers_
+    for (auto lname : layers_)//for lname in layers_
     {
         //(1).跳过没有w和b的层
         if (!data_[lname][1] || !data_[lname][2])
         {
-            continue;  //跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
+            continue;//跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
         }
 
         //(2).利用梯度下降更新有w和b的层
@@ -306,11 +306,11 @@ void Net::evaluate_with_batch(NetParameter& param)
         X_train_subset = X_train_;
         Y_train_subset = Y_train_;
     }
-    train_with_batch(X_train_subset, Y_train_subset, param,"TEST");  //“TEST”，测试模式，只进行前向传播
+    train_with_batch(X_train_subset, Y_train_subset, param,"TEST");//“TEST”，测试模式，只进行前向传播
     train_accu_ =calc_accuracy(*data_[layers_.back()][1], *data_[layers_.back()][0]);
 
     //(2).评估验证集准确率
-    train_with_batch(X_val_, Y_val_, param, "TEST");  //“TEST”，测试模式，只进行前向传播
+    train_with_batch(X_val_, Y_val_, param, "TEST");//“TEST”，测试模式，只进行前向传播
     val_accu_ = calc_accuracy(*data_[layers_.back()][1], *data_[layers_.back()][0]);
 }
 
@@ -321,11 +321,11 @@ double Net::calc_accuracy(Blob& Y, Blob& Predict)
     vector<int> size_P = Predict.size();
     for (int i = 0; i < 4; ++i)
     {
-        assert(size_Y[i] == size_P[i]);  //断言：两个输入Blob的尺寸（N,C,H,W）一样！
+        assert(size_Y[i] == size_P[i]);//断言：两个输入Blob的尺寸（N,C,H,W）一样！
     }
     //(2). 遍历所有cube（样本），找出标签值Y和预测值Predict最大值所在位置进行比较，若一致，则正确个数+1
-    int N = Y.get_N();  //总样本数
-    int right_cnt = 0;  //正确个数
+    int N = Y.get_N();//总样本数
+    int right_cnt = 0;//正确个数
     for (int n = 0; n < N; ++n)
     {
         //参考网址：http://arma.sourceforge.net/docs.html#index_min_and_index_max_member
@@ -333,18 +333,18 @@ double Net::calc_accuracy(Blob& Y, Blob& Predict)
         if (Y[n].index_max() == Predict[n].index_max())
             right_cnt++;
     }
-    return (double)right_cnt / (double)N;   //计算准确率，返回（准确率=正确个数/总样本数）
+    return (double)right_cnt / (double)N;//计算准确率，返回（准确率=正确个数/总样本数）
 }
 
 void Net::saveModelParam(shared_ptr<MyCaffe::Snapshot>& snapshot_model)
 {
     cout << endl << "/////////////////////////////// 打印Blob（w和b） /////////////////////////////////" << endl << endl;
-    for (auto lname : layers_)    //for lname in layers_
+    for (auto lname : layers_)//for lname in layers_
     {
         //(1).跳过没有w和b的层
         if (!data_[lname][1] || !data_[lname][2])
         {
-            continue;  //跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
+            continue;//跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
         }
         cout << "-----" << lname << "-----" << endl;
         for (int i = 1; i <= 2; ++i)
@@ -356,22 +356,22 @@ void Net::saveModelParam(shared_ptr<MyCaffe::Snapshot>& snapshot_model)
 
 
 
-    for (auto lname : layers_)    //for lname in layers_
+    for (auto lname : layers_)//for lname in layers_
     {
         //(1).跳过没有w和b的层
         if (!data_[lname][1] || !data_[lname][2])
         {
-            continue;  //跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
+            continue;//跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
         }
 
         //(2).取出相关Blob中的所有参数，填入snapshotModel中！
         for (int i = 1; i <= 2; ++i)
         {
-            MyCaffe::Snapshot::ParamBlok*  param_blok = snapshot_model->add_param_blok();   //（动态）添加一个paramBlock
-            int N = data_[lname][i]->get_N();			  //权重（偏置）核个数
-            int C = data_[lname][i]->get_C();            //权重（偏置）核通道数
-            int H = data_[lname][i]->get_H();			  //权重（偏置）核高
-            int W = data_[lname][i]->get_W();		  //权重（偏置）核宽
+            MyCaffe::Snapshot::ParamBlok*  param_blok = snapshot_model->add_param_blok();//（动态）添加一个paramBlock
+            int N = data_[lname][i]->get_N();//权重（偏置）核个数
+            int C = data_[lname][i]->get_C();//权重（偏置）核通道数
+            int H = data_[lname][i]->get_H();//权重（偏置）核高
+            int W = data_[lname][i]->get_W();//权重（偏置）核宽
             param_blok->set_kernel_n(N);
             param_blok->set_kernel_c(C);
             param_blok->set_kernel_h(H);
@@ -379,7 +379,7 @@ void Net::saveModelParam(shared_ptr<MyCaffe::Snapshot>& snapshot_model)
             param_blok->set_layer_name(lname);
             if (i == 1)
             {
-                param_blok->set_param_type("WEIGHT"); //写入参数类型
+                param_blok->set_param_type("WEIGHT");//写入参数类型
                 cout << lname << " : WEIGHT  " << "（" << N << "," << C << "," << H << "," << W << "）" << endl;
             }
             else
@@ -395,7 +395,7 @@ void Net::saveModelParam(shared_ptr<MyCaffe::Snapshot>& snapshot_model)
                     {
                         for (int w = 0; w<W; ++w)
                         {
-                            MyCaffe::Snapshot::ParamBlok::ParamValue*  param_value = param_blok->add_param_value();   //（动态）添加一个paramValue
+                            MyCaffe::Snapshot::ParamBlok::ParamValue*  param_value = param_blok->add_param_value();//（动态）添加一个paramValue
                             param_value->set_value((*data_[lname][i])[n](h, w, c));
                         }
                     }
@@ -411,23 +411,23 @@ void Net::saveModelParam(shared_ptr<MyCaffe::Snapshot>& snapshot_model)
 
 void Net::loadModelParam(const shared_ptr<MyCaffe::Snapshot>& snapshot_model)
 {
-    for (int i = 0; i < snapshot_model->param_blok_size(); ++i)  //逐个取出模型快照中的的paramBlok，填入我们定义的Blob数据结构中
+    for (int i = 0; i < snapshot_model->param_blok_size(); ++i)//逐个取出模型快照中的的paramBlok，填入我们定义的Blob数据结构中
     {
         //1. 从snapshot_model逐一取出paramBlok
-        const MyCaffe::Snapshot::ParamBlok& param_blok = snapshot_model->param_blok(i);  //取出对应paramBlok
+        const MyCaffe::Snapshot::ParamBlok& param_blok = snapshot_model->param_blok(i);//取出对应paramBlok
 
         //2. 取出paramBlok中的标记型变量
-        string lname = param_blok.layer_name();   //权重（偏置）核所属层名
-        string paramtype = param_blok.param_type();  //权重（偏置）核参数类型（WEIGHT或BIAS）
-        int N = param_blok.kernel_n();			  //权重（偏置）核个数
-        int C = param_blok.kernel_c();            //权重（偏置）核通道数
-        int H = param_blok.kernel_h();			  //权重（偏置）核高
-        int W = param_blok.kernel_w();			  //权重（偏置）核宽
+        string lname = param_blok.layer_name();//权重（偏置）核所属层名
+        string paramtype = param_blok.param_type();//权重（偏置）核参数类型（WEIGHT或BIAS）
+        int N = param_blok.kernel_n();//权重（偏置）核个数
+        int C = param_blok.kernel_c();//权重（偏置）核通道数
+        int H = param_blok.kernel_h();//权重（偏置）核高
+        int W = param_blok.kernel_w();//权重（偏置）核宽
         cout << lname << "：" << paramtype << " ：（" << N << ", " << C << ", " << H << ", " << W << ")" << endl;
 
         //3.遍历当前paramBlok中的每一个参数，取出来，填入对应的Blob中！
         int val_idx = 0;
-        shared_ptr<Blob> simple_blob(new Blob(N, C, H, W));  //中间Blob
+        shared_ptr<Blob> simple_blob(new Blob(N, C, H, W));//中间Blob
         for (int n = 0; n<N; ++n)
         {
             for (int c = 0; c < C; ++c)
@@ -437,8 +437,8 @@ void Net::loadModelParam(const shared_ptr<MyCaffe::Snapshot>& snapshot_model)
                     for (int w = 0; w<W; ++w)
                     {
                         const MyCaffe::Snapshot::ParamBlok::ParamValue& param_value = param_blok.param_value(val_idx);
-                        (*simple_blob)[n](h,w,c)=param_value.value();   //取出某个参数，填入Blob对应位置！
-                        val_idx++;  //param_blok块索引线性增加！
+                        (*simple_blob)[n](h,w,c)=param_value.value();//取出某个参数，填入Blob对应位置！
+                        val_idx++;//param_blok块索引线性增加！
                     }
                 }
             }
@@ -454,12 +454,12 @@ void Net::loadModelParam(const shared_ptr<MyCaffe::Snapshot>& snapshot_model)
 
 
     cout << endl << "/////////////////////////////// 打印Blob（w和b） /////////////////////////////////" << endl << endl;
-    for (auto lname : layers_)    //for lname in layers_
+    for (auto lname : layers_)//for lname in layers_
     {
         //(1).跳过没有w和b的层
         if (!data_[lname][1] || !data_[lname][2])
         {
-            continue;  //跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
+            continue;//跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
         }
         cout << "-----" << lname << "-----" << endl;
         for (int i = 1; i <= 2; ++i)
