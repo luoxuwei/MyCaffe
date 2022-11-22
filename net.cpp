@@ -22,7 +22,7 @@ void NetParameter::readNetParam(std::string file) {
             auto &tparam = value["train"];
             this->lr = tparam["learning rate"].asDouble();
             this->lr_decay = tparam["lr decay"].asDouble();
-            this->optimizer = tparam["update method"].asString();
+            this->optimizer = tparam["optimizer"].asString();
             this->momentum = tparam["momentum parameter"].asDouble();
             this->num_epochs = tparam["num epochs"].asInt();
             this->use_batch = tparam["use batch"].asBool();
@@ -157,7 +157,7 @@ void Net::trainNet(NetParameter& param)
     cout << "num_batchs(iterations) = " << num_batchs << endl;
 
     //for (int iter = 0; iter < num_batchs; ++iter)
-    for (int iter = 0; iter < 40; ++iter)
+    for (int iter = 0; iter < 50; ++iter)
     {
         //----------step1. 从整个训练集中获取一个mini-batch
         shared_ptr<Blob> X_batch;

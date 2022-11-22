@@ -37,7 +37,7 @@ public:
     virtual ~Layer(){}
     virtual void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param) = 0;
     /*每一层的Blob尺寸都是由上一层Blob尺寸经过一定计算规则计算得到的，需要为每一层计算输出尺寸的方法。*/
-    virtual void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param) = 0;
+    virtual void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param) = 0;
     virtual void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param) = 0;
     virtual void backward(const shared_ptr<Blob>& din,
                           const vector<shared_ptr<Blob>>& cache,
@@ -51,7 +51,7 @@ public:
     ConvLayer(){}
     ~ConvLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
-    void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
     void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
     void backward(const shared_ptr<Blob>& din,
                   const vector<shared_ptr<Blob>>& cache,
@@ -65,7 +65,7 @@ public:
     ReluLayer(){}
     ~ReluLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
-    void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
     void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
     //din反向梯度，cache输入和权重和偏置
     void backward(const shared_ptr<Blob>& din,
@@ -80,7 +80,7 @@ public:
     PoolLayer(){}
     ~PoolLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
-    void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
     void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
     void backward(const shared_ptr<Blob>& din,
                   const vector<shared_ptr<Blob>>& cache,
@@ -94,7 +94,7 @@ public:
     FcLayer(){}
     ~FcLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
-    void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
     void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
     void backward(const shared_ptr<Blob>& din,
                   const vector<shared_ptr<Blob>>& cache,

@@ -32,7 +32,7 @@ void ConvLayer::initLayer(const vector<int>& inShape, const string& lname, vecto
     return;
 }
 
-void ConvLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param)
+void ConvLayer::calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param)
 {
     //1.获取输入Blob尺寸
     int Ni = inShape[0]; //batch size 直接传递不会变
