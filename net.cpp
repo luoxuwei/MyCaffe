@@ -26,6 +26,7 @@ void NetParameter::readNetParam(std::string file) {
             this->optimizer = tparam["optimizer"].asString();
             this->momentum = tparam["momentum parameter"].asDouble();
             this->rms_decay = tparam["rmsprop decay"].asDouble();
+            this->reg = tparam["reg coefficient"].asDouble();
             this->num_epochs = tparam["num epochs"].asInt();
             this->use_batch = tparam["use batch"].asBool();
             this->batch_size = tparam["batch size"].asInt();
@@ -198,13 +199,13 @@ void Net::trainNet(NetParameter& param)
         train_with_batch(X_batch, Y_batch, param);
 
         //----------step3. 评估模型当前准确率（训练集和验证集）
-        evaluate_with_batch(param);
-        printf("iter_%d lr: %0.6f loss: %f train_acc: %0.2f%% val_acc: %0.2f%%\n",
-               iter,
-               param.lr,
-               loss_,
-               train_accu_ * 100,
-               val_accu_ * 100);
+        //----------step3. 评估模型当前准确率（训练集和验证集）
+        if (iter%param.eval_interval == 0)
+        {
+            evaluate_with_batch(param);
+            printf("iter_%d    lr: %0.6f    train_loss: %f    val_loss: %f    train_acc: %0.2f%%    val_acc: %0.2f%%\n",
+                   iter, param.lr, train_loss_, val_loss_, train_accu_ * 100, val_accu_ * 100);
+        }
 
         //----------step4.保存模型快照 https://blog.csdn.net/u011334621/article/details/51735418
         if (iter > 0 && param.snap_shot && iter % param.snapshot_interval == 0)
@@ -247,28 +248,68 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
     }
 
     //------- step3. softmax前向计算和计算代价值
-    if (ltypes_.back()=="Softmax")//layers_.back()最后一个元素, diff_[layers_.back()][0] 是dx
-        SoftmaxLossLayer::softmax_cross_entropy_with_logits(data_[layers_.back()], loss_, diff_[layers_.back()][0]);
-    if (ltypes_.back() == "SVM")
-        SVMLossLayer::hinge_with_logits(data_[layers_.back()], loss_, diff_[layers_.back()][0]);
-
-    cout << "loss_=" << loss_ << endl;//第一次迭代后，损失值约为2.3
-
-    if (mode == "TEST")//如果仅用于前向传播（做测试，不训练），则提前退出！不会再执行下面的反向传播和优化
-        return;
-
-    //------- step4. 逐层反向传播   conv1<-relu1<-pool1<-fc1<-softmax
-    //从fc1开始反向传播
-    for (int i = n-2; i >= 0; --i)
+    if (mode == "TRAIN")
     {
-        string lname = layers_[i];
-        //输入后一层的梯度所以是i+1
-        myLayers_[lname]->backward(diff_[layers_[i+1]][0],  data_[lname],  diff_[lname],  param.lparams[lname]);
+
+        if (ltypes_.back() == "Softmax")//layers_.back()最后一个元素, diff_[layers_.back()][0] 是dx
+            SoftmaxLossLayer::softmax_cross_entropy_with_logits(data_[layers_.back()], train_loss_, diff_[layers_.back()][0]);
+        if (ltypes_.back() == "SVM")
+            SVMLossLayer::hinge_with_logits(data_[layers_.back()], train_loss_, diff_[layers_.back()][0]);
+    }
+    else
+    {
+        if (ltypes_.back() == "Softmax")
+            SoftmaxLossLayer::softmax_cross_entropy_with_logits(data_[layers_.back()], val_loss_, diff_[layers_.back()][0]);
+        if (ltypes_.back() == "SVM")
+            SVMLossLayer::hinge_with_logits(data_[layers_.back()], val_loss_, diff_[layers_.back()][0]);
     }
 
-    //----------step5. 参数更新（利用梯度下降）
-    optimizer_with_batch(param);
+    //------- step4. 逐层反向传播
+    if (mode == "TRAIN")
+    {
+        for (int i = n - 2; i >= 0; --i)
+        {
+            string lname = layers_[i];
+            //输入后一层的梯度所以是i+1
+            myLayers_[lname]->backward(diff_[layers_[i + 1]][0], data_[lname], diff_[lname], param.lparams[lname]);
+        }
+    }
 
+
+    //----------step5.对各层梯度施加L2正则化的影响
+    if (param.reg!=0)//正则化系数不为0，意味着需要施加L2正则化！
+        regular_with_batch(param,mode);
+
+    //----------step6. 参数更新（利用梯度下降）
+    if (mode == "TRAIN")
+        optimizer_with_batch(param);
+
+}
+
+void Net::regular_with_batch(NetParameter& param, string mode)
+{
+    int N = data_[layers_[0]][0]->get_N();//获取该批次样本数
+    double reg_loss = 0;
+    for (auto lname : layers_)
+    {
+        if (diff_[lname][1])//只对带权值梯度的层进行处理！
+        {
+            if (mode == "TRAIN") {
+                //梯度加上正则项
+                Blob temp = param.reg * (*data_[lname][1]);
+                temp = temp / N;
+                (*diff_[lname][1])  = (*diff_[lname][1]) + temp;
+            }
+            //损失加上正则项
+            Blob temp = square((*data_[lname][1]));
+            reg_loss += accu(temp);
+        }
+    }
+    reg_loss = reg_loss* param.reg / (2 * N);
+    if (mode == "TRAIN")
+        train_loss_ = train_loss_ + reg_loss;
+    else
+        val_loss_ = val_loss_ + reg_loss;
 }
 
 void Net::optimizer_with_batch(NetParameter& param)

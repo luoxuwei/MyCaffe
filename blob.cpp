@@ -276,3 +276,37 @@ Blob operator/(Blob& A, Blob& B)
     }
     return C;
 }
+
+Blob operator/(Blob& A, double val)
+{
+    //(1). 遍历所有的cube，每一个cube都除以一个数
+    int N = A.get_N();
+    Blob out(A.size());
+    for (int i = 0; i < N; ++i)
+    {
+        out[i] = A[i] / val;
+    }
+    return out;
+}
+
+Blob square(Blob& A)
+{
+    int N = A.get_N();
+    Blob out(A.size());
+    for (int i = 0; i < N; ++i)
+    {
+        out[i] = arma::square(A[i]);
+    }
+    return out;
+}
+
+double accu(Blob& A)
+{
+    int N = A.get_N();
+    double result=0;
+    for (int i = 0; i < N; ++i)
+    {
+        result += arma::accu(A[i]);
+    }
+    return result;
+}

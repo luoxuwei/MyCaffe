@@ -95,11 +95,8 @@ void ReadMnistLabel(string path, shared_ptr<Blob> &labels)
     }
 }
 
-void trainModel(string configFile, shared_ptr<Blob> X, shared_ptr<Blob> Y)
+void trainModel(NetParameter& net_param, shared_ptr<Blob> X, shared_ptr<Blob> Y)
 {
-    //0. 读入并解析网络结构定义
-    NetParameter net_param;
-    net_param.readNetParam(configFile);
 
     //1. 将60000张图片以59:1的比例划分为训练集（59000张）和验证集（1000张）
     shared_ptr<Blob> X_train(new Blob(X->subBlob(0,59000)));//左闭右开区间，即[ 0, 59000 )
@@ -122,11 +119,47 @@ void trainModel(string configFile, shared_ptr<Blob> X, shared_ptr<Blob> Y)
 
 }
 
+void trainModel_with_exVal(NetParameter& net_param, shared_ptr<Blob> X_tarin_ori, shared_ptr<Blob> Y_tarin_ori,
+                           shared_ptr<Blob> X_val_ori, shared_ptr<Blob> Y_val_ori)
+{
+
+    vector<shared_ptr<Blob>> XX{ X_tarin_ori, X_val_ori };
+    vector<shared_ptr<Blob>> YY{ Y_tarin_ori, Y_val_ori };
+
+    //2. 初始化网络结构
+    Net myModel;
+    myModel.initNet(net_param, XX, YY);
+
+    //3. 开始训练
+    cout << "------------ step3. Train start... ---------------" << endl;
+    myModel.trainNet(net_param);
+    cout << "------------ Train end... ---------------" << endl;
+}
+
+
 int main(int argc, char** argv) {
+    //0. 读入并解析我们的网络结构定义
+    string configFile = "./my_model.json";
+    NetParameter net_param;
+    net_param.readNetParam(configFile);
+
     //创建两个Blob对象，一个用来存储图片特征值（数据），另一个用来存储标签值
     shared_ptr<Blob> images(new Blob(60000, 1, 28, 28, TZEROS));
     shared_ptr<Blob> labels(new Blob(60000, 10, 1, 1, TZEROS));//保存one-hot编码的标签值
     ReadMnistData("mnist_data/train/train-images.idx3-ubyte", images);//读取data
     ReadMnistLabel("mnist_data/train/train-labels.idx1-ubyte", labels);//读取label
-    trainModel("./my_model.json", images, labels);
+
+    shared_ptr<Blob> images_test(new Blob(10000, 1, 28, 28, TZEROS));
+    shared_ptr<Blob> labels_test(new Blob(10000, 10, 1, 1, TZEROS));//保存one-hot编码的标签值
+    ReadMnistData("mnist_data/test/t10k-images.idx3-ubyte", images_test);//读取data
+    ReadMnistLabel("mnist_data/test/t10k-labels.idx1-ubyte", labels_test);//读取label
+
+    int samples_num = 1000;
+    shared_ptr<Blob> X_train(new Blob(images->subBlob(0, samples_num)));
+    shared_ptr<Blob> Y_train(new Blob(labels->subBlob(0, samples_num)));
+    shared_ptr<Blob> X_test(new Blob(images_test->subBlob(0, samples_num)));
+    shared_ptr<Blob> Y_test(new Blob(labels_test->subBlob(0, samples_num)));
+    trainModel_with_exVal(net_param, X_train, Y_train, X_test, Y_test);
+
+//    trainModel(net_param, images, labels);
 }

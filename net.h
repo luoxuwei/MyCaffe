@@ -30,6 +30,8 @@ struct NetParameter {
     double momentum;
     /*rmsprop 衰减系数 */
     double rms_decay;
+    /*L2正则化系数 */
+    double reg;
     /*epoch次数 */
     int num_epochs;
     /*是否使用mini-batch梯度下降*/
@@ -66,6 +68,7 @@ public:
     void initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<shared_ptr<Blob>>& Y);
     void trainNet(NetParameter& param);
     void train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParameter& param, string mode="TRAIN");
+    void regular_with_batch(NetParameter& param, string mode = "TRAIN");
     void optimizer_with_batch(NetParameter& param);
     void evaluate_with_batch(NetParameter& param);
     double calc_accuracy(Blob& Y, Blob& Predict);
@@ -82,7 +85,8 @@ private:
 
     vector<string> layers_;//层名
     vector<string> ltypes_;//层类型
-    double loss_;
+    double train_loss_;
+    double val_loss_;
     double train_accu_;
     double val_accu_;
 
