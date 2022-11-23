@@ -25,6 +25,7 @@ void NetParameter::readNetParam(std::string file) {
             this->lr_decay = tparam["lr decay"].asDouble();
             this->optimizer = tparam["optimizer"].asString();
             this->momentum = tparam["momentum parameter"].asDouble();
+            this->rms_decay = tparam["rmsprop decay"].asDouble();
             this->num_epochs = tparam["num epochs"].asInt();
             this->use_batch = tparam["use batch"].asBool();
             this->batch_size = tparam["batch size"].asInt();
@@ -58,6 +59,7 @@ void NetParameter::readNetParam(std::string file) {
                     this->lparams[ii["name"].asString()].conv_pad = pad;
                     this->lparams[ii["name"].asString()].conv_width = width;
                     this->lparams[ii["name"].asString()].conv_height = height;
+                    this->lparams[ii["name"].asString()].conv_weight_init = ii["conv weight init"].asString();
                 }
                 if (ii["type"].asString() == "Pool")
                 {
@@ -72,6 +74,7 @@ void NetParameter::readNetParam(std::string file) {
                 {
                     int num = ii["kernel num"].asInt();
                     this->lparams[ii["name"].asString()].fc_kernels = num;
+                    this->lparams[ii["name"].asString()].fc_weight_init = ii["fc weight init"].asString();
                 }
             }
         }
@@ -103,6 +106,7 @@ void Net::initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<share
         data_[layers_[i]] = vector<shared_ptr<Blob>>(3, NULL);
         /*为每一层创建反向计算要用到的3个Blob dw db */
         diff_[layers_[i]] = vector<shared_ptr<Blob>>(3, NULL);
+        step_cache_[layers_[i]] = vector<shared_ptr<Blob>>(3, NULL); //为每一层梯度计算创建要用到的3个Blob x,w,b
         /*存储每一层的输出尺寸*/
         outShapes_[layers_[i]] = vector<int>(4);
     }
@@ -282,10 +286,41 @@ void Net::optimizer_with_batch(NetParameter& param)
         for (int i = 1; i <= 2; ++i)
         {
             assert(param.optimizer == "sgd" || param.optimizer == "momentum" || param.optimizer == "rmsprop");//sgd/momentum/rmsprop
-            //w:=w-param.lr*dw ;    b:=b-param.lr*db     ---->  "sgd"
+
             shared_ptr<Blob> dparam(new Blob(data_[lname][i]->size(),TZEROS));
-            (*dparam) = -param.lr * (*diff_[lname][i]);
-            (*data_[lname][i]) = (*data_[lname][i]) + (*dparam);
+            if (param.optimizer == "rmsprop")
+            {
+                //V_grad = decay * V_grad + (1-decay)*grad*grad
+                //param = param -  learning_rate * grad/sqrt(V_grad + esp)
+                double decay_rate = param.rms_decay;
+                if (!step_cache_[lname][i])
+                    step_cache_[lname][i].reset(new Blob(data_[lname][i]->size(), TZEROS));
+                Blob temp1 = decay_rate * (*step_cache_[lname][i]);
+                Blob temp2 = (*diff_[lname][i]) * (*diff_[lname][i]);
+                temp2 = (1 - decay_rate) * temp2;
+                (*step_cache_[lname][i]) = temp1 + temp2;
+                Blob temp3 = (*step_cache_[lname][i]) + 1e-8;//加一个极小值
+                temp3 = sqrt(temp3);
+                Blob temp4 = -param.lr * (*diff_[lname][i]);
+                (*dparam) = temp4 / temp3;
+
+            }
+            else if (param.optimizer == "momentum")
+            {
+                //V_grad = momentum * V_grad + grad
+                //param = param - V_grad * learning_rate
+                if (!step_cache_[lname][i])
+                    step_cache_[lname][i].reset(new Blob(data_[lname][i]->size(), TZEROS));
+                Blob temp = param.momentum * (*step_cache_[lname][i]);
+                (*step_cache_[lname][i]) = temp + (*diff_[lname][i]);
+                (*dparam) = -param.lr * (*step_cache_[lname][i]);
+            }
+            else
+            {
+                //w:=w-param.lr*dw ;    b:=b-param.lr*db     ---->  "sgd"
+                (*dparam) = -param.lr * (*diff_[lname][i]);
+            }
+            (*data_[lname][i]) = (*data_[lname][i]) + (*dparam);//所有优化算法公用部分（梯度下降）
         }
     }
     //学习率更新

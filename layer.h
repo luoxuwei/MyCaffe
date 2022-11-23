@@ -20,6 +20,7 @@ struct LayerParameter {
     int conv_width;
     int conv_height;
     int conv_kernels;
+    string conv_weight_init;
 
     /*2.池化层超参数*/
     int pool_stride;
@@ -28,6 +29,7 @@ struct LayerParameter {
 
     /*3.全连接层超参数（即该层神经元个数） */
     int fc_kernels;
+    string fc_weight_init;
 };
 
 class Layer

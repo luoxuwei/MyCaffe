@@ -66,12 +66,12 @@ void Blob::print(string str)
     }
 }
 
-cube& Blob::operator[] (int i)
+cube& Blob::operator[](int i)
 {
     return blob_data[i];
 }
 
-Blob& Blob::operator*= (const double k)
+Blob& Blob::operator*=(const double k)
 {
     for (int i = 0; i < N_; ++i)
     {
@@ -80,7 +80,7 @@ Blob& Blob::operator*= (const double k)
     return *this;
 }
 
-Blob& Blob::operator= (double val)
+Blob& Blob::operator=(double val)
 {
     for (int i = 0; i < N_; ++i)
     {
@@ -233,4 +233,46 @@ vector<int> Blob::size() const
                           H_,
                           W_ };
     return shape_;
+}
+
+Blob operator+(Blob& A, double val)
+{
+    //遍历所有的cube，每一个cube都加上一个数值
+    int N = A.get_N();
+    Blob out(A.size());
+    for (int i = 0; i < N; ++i)
+    {
+        out[i] = A[i] + val;
+    }
+    return out;
+}
+
+Blob sqrt(Blob& A)
+{
+    int N = A.get_N();
+    Blob out(A.size());
+    for (int i = 0; i < N; ++i)
+    {
+        out[i] = arma::sqrt(A[i]);
+    }
+    return out;
+}
+
+Blob operator/(Blob& A, Blob& B)
+{
+    //(1). 确保两个输入Blob尺寸一样
+    vector<int> size_A = A.size();
+    vector<int> size_B = B.size();
+    for (int i = 0; i < 4; ++i)
+    {
+        assert(size_A[i] == size_B[i]);//断言：两个输入Blob的尺寸（N,C,H,W）一样！
+    }
+    //(2). 遍历所有的cube，每一个cube做对应位置相除（cube / cube）
+    int N = size_A[0];
+    Blob C(A.size());
+    for (int i = 0; i < N; ++i)
+    {
+        C[i] = A[i] / B[i];
+    }
+    return C;
 }

@@ -19,7 +19,16 @@ void ConvLayer::initLayer(const vector<int>& inShape, const string& lname, vecto
     if (!in[1])//存储W的Blob不为空
     {
         in[1].reset(new Blob(tF, tC, tH, tW, TRANDN));//标准高斯初始化（μ= 0和σ= 1）标准差为1太大，初始化的权值要尽量小 np.randn()*0.01
-        (*in[1]) *= 1e-2;
+        if (param.conv_weight_init == "msra")
+        {
+            (*in[1]) *= std::sqrt(2 / (double)(inShape[1] * inShape[2] * inShape[3]));
+            cout << "initLayer: " << lname << "  Init weights  with MSRA ;" << endl;
+        }
+        else
+        {
+            (*in[1]) *= 1e-2;
+            cout << "initLayer: " << lname << "  Init weights  with standard Gaussian ;" << endl;
+        }
         cout << "initLayer: " << lname << "  Init weights  with standard Gaussian ;" << endl;
     }
     if (!in[2])//存储b的Blob不为空
@@ -329,7 +338,16 @@ void FcLayer::initLayer(const vector<int>& inShape, const string& lname, vector<
     if (!in[1])//存储W的Blob不为空
     {
         in[1].reset(new Blob(tF, tC, tH, tW, TRANDN));  //标准高斯初始化（μ= 0和σ= 1） np.randn()*0.01
-        (*in[1]) *= 1e-2;
+        if (param.fc_weight_init == "msra")
+        {
+            (*in[1]) *= std::sqrt(2 / (double)(inShape[1] * inShape[2] * inShape[3]));
+            cout << "initLayer: " << lname << "  Init weights  with MSRA ;" << endl;
+        }
+        else
+        {
+            (*in[1]) *= 1e-2;
+            cout << "initLayer: " << lname << "  Init weights  with standard Gaussian ;" << endl;
+        }
         cout << "initLayer: " << lname << "  Init weights  with standard Gaussian ;" << endl;
     }
     if (!in[2])//存储b的Blob不为空

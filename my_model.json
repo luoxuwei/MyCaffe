@@ -8,13 +8,13 @@
 		// 学习率衰减: 通常设置为 0.99
 		"lr decay": 0.999,
 		// 优化策略: sgd/momentum/rmsprop
-		"optimizer": "sgd",
+		"optimizer": "rmsprop",
 		// 如果想使用添加动量的梯度下降算法做优化,需要设置这一项，通常设置为 0.9/0.95 即可，一般不需要调整
 		"momentum coefficient": 0.95,
+		//rmsprop优化器的衰减系数
+		"rmsprop decay": 0.95,
 		// 全部样本训练一遍就是一个epoch
-		"num epochs": 1,
-		// 是否使用mini-batch梯度下降算法做优化？ true/false
-		"use batch": true,
+		"num epochs": 5,
 		// batch size
 		"batch size": 200,
 		// 每隔几个迭代周期评估一次准确率？
@@ -35,11 +35,12 @@
 		{
 			"name":"conv1",  //层名
 			"type":"Conv",   //层类型
-			"kernel num":5,  //卷积核个数
+			"kernel num":8,  //卷积核个数
 			"kernel height":5,  //卷积核高
 			"kernel width":5,   //卷积核宽
 			"pad":1,			//填充数
-			"stride":1			//滑动步长
+			"stride":1,			//滑动步长
+			"conv weight init":"msra"  //权重初始化方式  msra/gaussian
 		},
 		{
 			"name":"relu1",  //层名
@@ -55,11 +56,14 @@
 		{
 			"name":"fc1",  //层名
 			"type":"Fc",   //层类型
-			"kernel num":10 //神经元个数
+			"kernel num":10, //神经元个数
+			"fc weight init":"msra"  //权重初始化方式  msra/gaussian
 		},
 		{
-			"name":"svm",  //层名
-			"type":"SVM" //层类型
+			"name":"softmax",  //层名
+			"type":"Softmax" //层类型
+			//"name":"svm",  //层名
+			//"type":"SVM" //层类型
 		}
 	]
 }

@@ -34,12 +34,15 @@ public:
     Blob(const int n, const int c, const int h, const int w, int type = TDEFAULT);/*type:填充立方体的方式*/
     Blob(const vector<int> shape_, int type = TDEFAULT);
     vector<cube>& get_data();
-    cube& operator[] (int i);
-    Blob& operator*= (const double i);
-    Blob& operator= (double val);
+    cube& operator[](int i);
+    Blob& operator*=(const double i);
+    Blob& operator=(double val);
     friend Blob operator*(Blob& A, Blob& B);//声明为友元函数
     friend Blob operator*(double num, Blob& B);//声明为友元函数
     friend Blob operator+(Blob& A, Blob& B);//声明为友元函数
+    friend Blob operator+(Blob& A, double val);//声明为友元函数
+    friend Blob operator/(Blob& A, Blob& B);//声明为友元函数
+    friend Blob sqrt(Blob& A);//声明为友元函数
     Blob subBlob(int low_idx, int high_idx);
     Blob pad(int pad,double val=0);
     Blob deletePad(int pad);

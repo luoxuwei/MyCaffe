@@ -28,6 +28,8 @@ struct NetParameter {
     std::string optimizer;
     /*momentum系数 */
     double momentum;
+    /*rmsprop 衰减系数 */
+    double rms_decay;
     /*epoch次数 */
     int num_epochs;
     /*是否使用mini-batch梯度下降*/
@@ -86,6 +88,7 @@ private:
 
     unordered_map<string, vector<shared_ptr<Blob>>> data_;//前向计算需要用到的Blob data_[0]=X,  data_[1]=W,data_[2] = b;
     unordered_map<string, vector<shared_ptr<Blob>>> diff_;//反向计算需要用到的Blob diff_[0]=dX,  diff_[1]=dW,diff_[2] = db;
+    unordered_map<string, vector<shared_ptr<Blob>>> step_cache_;//存储累加梯度（主要用于momentum和rmsprop）
     unordered_map<string, shared_ptr<Layer>> myLayers_;
     unordered_map<string,vector<int>> outShapes_;//存储每一层的输出尺寸
 };
