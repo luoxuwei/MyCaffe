@@ -310,3 +310,13 @@ double accu(Blob& A)
     }
     return result;
 }
+
+void Blob::convertIn(double val)
+{
+    assert(!blob_data.empty());
+    for (int i = 0; i < N_; ++i)
+    {
+        blob_data[i].transform([val](double e){return e<val ? 0 : 1; });
+    }
+    return;
+}

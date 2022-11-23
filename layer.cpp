@@ -67,7 +67,7 @@ void ConvLayer::calcShape(const vector<int>& inShape, vector<int>& outShape, con
     return;
 }
 
-void ConvLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
+void ConvLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode)
 {
     cout << "ConvLayer::forward()..." << endl;
     if (out)
@@ -177,7 +177,7 @@ void ReluLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const
     return;
 }
 
-void ReluLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
+void ReluLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode)
 {
     cout << "ReluLayer::forward()..." << endl;
     if (out)
@@ -239,7 +239,7 @@ void PoolLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const
     return;
 }
 
-void PoolLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
+void PoolLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode)
 {
     cout << "PoolLayer::forward()..." << endl;
     if (out)
@@ -375,7 +375,7 @@ void FcLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const L
     return;
 }
 
-void FcLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param)
+void FcLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode)
 {
 
     cout << "FcLayer::forward()..." << endl;
@@ -437,6 +437,53 @@ void FcLayer::backward(const shared_ptr<Blob>& din,
         }
     }
     return;
+}
+
+void DropoutLayer::initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param)
+{
+    cout << "DropoutLayer::initLayer()  ok!!!" << endl;
+    return;
+}
+
+void DropoutLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param)
+{
+    outShape.assign(inShape.begin(), inShape.end());//将inShape复制一份给outShape（深拷贝）
+    return;
+}
+
+void DropoutLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode)
+{
+    if (out)
+        out.reset();
+    double drop_rate = param.drop_rate;
+    assert(drop_rate >= 0 && drop_rate <= 1);//drop_rate必须介于[0,1]
+
+    if (mode == "TRAIN")
+    {
+        //1.生成01随机掩码
+        shared_ptr<Blob> in_mask(new Blob(in[0]->size(), TRANDU));
+        in_mask->convertIn(drop_rate);
+        drop_mask.reset(new Blob(*in_mask));
+        //2.输出特征Blob = 输入特征Blob * 掩码Blob
+        Blob temp = (*in[0]) * (*in_mask);
+        //输入特征乘以掩码后期望值与输入比降低了，如果想维持期望值不变就需要做rescale操作
+        out.reset(new Blob(temp / (1-drop_rate)));//rescale: 输出期望值 = （1 - drop_rate）* 原始期望值，所以想要维持就要除以（1 - drop_rate）
+    }
+    else
+    {
+        out.reset(new Blob(*in[0]));//测试阶段，输出直接直接等于输入（无dropout操作）
+    }
+}
+
+void DropoutLayer::backward(const shared_ptr<Blob>& din,
+                            const vector<shared_ptr<Blob>>& cache,
+                            vector<shared_ptr<Blob>>& grads,
+                            const LayerParameter& param)
+{
+    double drop_rate = param.drop_rate;
+    Blob temp = (*din) * (*drop_mask);
+    //同样如果想维持输出梯度的期望值不变，就需要做rescale操作
+    grads[0].reset(new Blob(temp / (1 - drop_rate)));
 }
 
 void SoftmaxLossLayer::softmax_cross_entropy_with_logits(const vector<shared_ptr<Blob>>& in, double& loss, shared_ptr<Blob>& dout)

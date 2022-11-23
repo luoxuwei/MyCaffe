@@ -14,7 +14,7 @@
 		//rmsprop优化器的衰减系数
 		"rmsprop decay": 0.95,
 		//正则化系数
-		"reg coefficient": 0.4,
+		"reg coefficient": 0,
 		// 全部样本训练一遍就是一个epoch
 		"num epochs": 200,
 		// batch size
@@ -35,6 +35,11 @@
 	//json文件中，键值类型可以是：数值，字符串，布尔数，数组
 	"net":[
 		{
+			"name":"drop0",  //层名
+			"type":"Dropout",   //层类型
+			"drop rate": 0.5  //dropout比例（置零比例）
+		},
+		{
 			"name":"fc1",  //层名
 			"type":"Fc",   //层类型
 			"kernel num":512, //神经元个数
@@ -43,6 +48,11 @@
 		{
 			"name":"relu1",  //层名
 			"type":"Relu"   //层类型
+		},
+		{
+			"name":"drop1",  //层名
+			"type":"Dropout",   //层类型
+			"drop rate": 0.5  //dropout比例（置零比例）
 		},
 		{
 			"name":"fc2",  //层名

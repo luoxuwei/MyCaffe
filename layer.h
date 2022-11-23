@@ -30,6 +30,9 @@ struct LayerParameter {
     /*3.全连接层超参数（即该层神经元个数） */
     int fc_kernels;
     string fc_weight_init;
+
+    /*4.Dropout层超参数*/
+    double drop_rate;
 };
 
 class Layer
@@ -40,7 +43,7 @@ public:
     virtual void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param) = 0;
     /*每一层的Blob尺寸都是由上一层Blob尺寸经过一定计算规则计算得到的，需要为每一层计算输出尺寸的方法。*/
     virtual void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param) = 0;
-    virtual void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param) = 0;
+    virtual void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode) = 0;
     virtual void backward(const shared_ptr<Blob>& din,
                           const vector<shared_ptr<Blob>>& cache,
                           vector<shared_ptr<Blob>>& grads,
@@ -54,7 +57,7 @@ public:
     ~ConvLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
     void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
-    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode);
     void backward(const shared_ptr<Blob>& din,
                   const vector<shared_ptr<Blob>>& cache,
                   vector<shared_ptr<Blob>>& grads,
@@ -68,7 +71,7 @@ public:
     ~ReluLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
     void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
-    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode);
     //din反向梯度，cache输入和权重和偏置
     void backward(const shared_ptr<Blob>& din,
                   const vector<shared_ptr<Blob>>& cache,
@@ -83,7 +86,7 @@ public:
     ~PoolLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
     void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
-    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode);
     void backward(const shared_ptr<Blob>& din,
                   const vector<shared_ptr<Blob>>& cache,
                   vector<shared_ptr<Blob>>& grads,
@@ -97,11 +100,27 @@ public:
     ~FcLayer(){}
     void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
     void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
-    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode);
     void backward(const shared_ptr<Blob>& din,
                   const vector<shared_ptr<Blob>>& cache,
                   vector<shared_ptr<Blob>>& grads,
                   const LayerParameter& param);
+};
+
+class DropoutLayer : public Layer
+{
+public:
+    DropoutLayer(){}
+    ~DropoutLayer(){}
+    void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
+    void calcShape(const vector<int>& inShape, vector<int>& outShape, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode);
+    void backward(const shared_ptr<Blob>& din,
+                  const vector<shared_ptr<Blob>>& cache,
+                  vector<shared_ptr<Blob>>& grads,
+                  const LayerParameter& param);
+private:
+    shared_ptr<Blob> drop_mask;
 };
 
 class SoftmaxLossLayer

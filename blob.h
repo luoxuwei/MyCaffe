@@ -50,6 +50,7 @@ public:
     Blob pad(int pad,double val=0);
     Blob deletePad(int pad);
     void maxIn(double val=0.0);
+    void convertIn(double val = 0.0);
     vector<int> size() const;
     inline int get_N() const
     {

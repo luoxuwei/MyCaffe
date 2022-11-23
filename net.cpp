@@ -77,6 +77,10 @@ void NetParameter::readNetParam(std::string file) {
                     this->lparams[ii["name"].asString()].fc_kernels = num;
                     this->lparams[ii["name"].asString()].fc_weight_init = ii["fc weight init"].asString();
                 }
+                if (ii["type"].asString() == "Dropout")
+                {
+                    this->lparams[ii["name"].asString()].drop_rate = ii["drop rate"].asDouble();
+                }
             }
         }
 
@@ -140,6 +144,10 @@ void Net::initNet(NetParameter& param, vector<shared_ptr<Blob>>& X, vector<share
         if (ltype == "Fc")
         {
             myLayer.reset(new FcLayer);
+        }
+        if (ltype == "Dropout")
+        {
+            myLayer.reset(new DropoutLayer);
         }
         myLayers_[lname] = myLayer;
         /*初始化参数*/
@@ -243,7 +251,7 @@ void Net::train_with_batch(shared_ptr<Blob>&  X, shared_ptr<Blob>&  Y, NetParame
     {
         string lname = layers_[i];
         shared_ptr<Blob> out;
-        myLayers_[lname]->forward(data_[lname], out, param.lparams[lname]);
+        myLayers_[lname]->forward(data_[lname], out, param.lparams[lname], mode);
         data_[layers_[i+1]][0] = out;
     }
 
