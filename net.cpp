@@ -323,13 +323,13 @@ void Net::regular_with_batch(NetParameter& param, string mode)
 void Net::optimizer_with_batch(NetParameter& param)
 {
 
-    for (auto lname : layers_)//for lname in layers_
+    for (int i = 0; i < layers_.size()-1; ++i)//for lname in layers_
     {
-        //(1).跳过没有w和b的层
-        if (!data_[lname][1] || !data_[lname][2])
-        {
-            continue;//跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
-        }
+        string lname = layers_[i];
+        string ltype = ltypes_[i];
+        //(1).跳过没有w和b的层, 跳过BN层（因为对应位置存的是running_mean和running_std，无需参与梯度下降）
+        if (!data_[lname][1] || !data_[lname][2] || ltype == "BN")
+            continue;  //跳过本轮循环，重新执行循环（注意不是像break那样直接跳出循环）
 
         //(2).利用梯度下降更新有w和b的层
         for (int i = 1; i <= 2; ++i)

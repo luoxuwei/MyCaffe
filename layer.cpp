@@ -486,6 +486,243 @@ void DropoutLayer::backward(const shared_ptr<Blob>& din,
     grads[0].reset(new Blob(temp / (1 - drop_rate)));
 }
 
+void BNLayer::initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param)
+{
+    cout << "BNLayer::initLayer()  ok!!!" << endl;
+    int C = inShape[1];
+    int H = inShape[2];
+    int W = inShape[3];
+    //NB层没有w和b，干脆用来保存均值和方差，还可以和wb一样保存为预训练模型
+    //测试的时候就可以直接用这个均值和方差
+    if (!in[1])//存储running_mean_的Blob不为空
+    {
+        in[1].reset(new Blob(1, C, H, W, TZEROS));
+        cout << "initLayer: " << lname << "  Init  running_mean_  with Zeros ;" << endl;
+    }
+    if (!in[2])//存储running_std_的Blob不为空
+    {
+        in[2].reset(new Blob(1, C, H, W, TZEROS));
+        cout << "initLayer: " << lname << "  Init  running_std_  with Zeros ;" << endl;
+    }
+
+    return;
+}
+
+void BNLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param)
+{
+    outShape.assign(inShape.begin(), inShape.end());//将尺寸inShape复制一份给尺寸outShape（深拷贝）
+    return;
+}
+
+void BNLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode)
+{
+    if (out)
+        out.reset();
+
+    out.reset(new Blob(in[0]->size(), TZEROS));
+
+    int N = in[0]->get_N();
+    int C = in[0]->get_C();
+    int H = in[0]->get_H();
+    int W = in[0]->get_W();
+
+    //做批归一化前要判断是训练还是测试，训练输入是一个batch，测试可以是一个样本
+    if (mode == "TRAIN")
+    {
+        //0.清空该批次的几个变量
+        mean_.reset(new cube(1, 1, C, fill::zeros));//（负）均值
+        var_.reset(new cube(1, 1, C, fill::zeros));//方差
+        std_.reset(new cube(1, 1, C, fill::zeros));//标准差
+        //1.求该批次(负)均值 (对于卷积层，先对feature map求均值，再对所有样本求均值)
+        //对每一个cube求和，dim 0是行1是列，cube的每一个通道做同样的操作
+        for (int i = 0; i < N; ++i)
+            (*mean_) += sum(sum((*in[0])[i], 0), 1) / (H*W);//cube(1, 1, C)
+        (*mean_) /= (-N);//(负)均值-->cube(1, 1, C)
+        //2.求该批次方差
+        for (int i = 0; i < N; ++i)
+            (*var_) += square(sum(sum((*in[0])[i], 0), 1) / (H*W) + (*mean_));
+        (*var_) /= N;//方差-->cube(1, 1, C)
+        //3.求该批次标准差
+        (*std_) = sqrt((*var_) + 1e-5);//标准差-->cube(1, 1, C)
+        //4.广播均值和标准差，完成尺寸匹配
+        cube mean_tmp(H, W, C, fill::zeros);
+        cube std_tmp(H, W, C, fill::zeros);
+        for (int c = 0; c < C; ++c)
+        {
+            mean_tmp.slice(c).fill(as_scalar((*mean_).slice(c)));//负均值-->cube(H, W, C)
+            std_tmp.slice(c).fill(as_scalar((*std_).slice(c)));//标准差-->cube(H, W, C)
+        }
+        //5.归一化每一个特征
+        for (int i = 0; i < N; ++i)
+            (*out)[i] = ((*in[0])[i] + mean_tmp) / std_tmp;
+        //6.用第一个batch的mean和std初始化running_mean和running_std，
+        //测试的时候用，测试的时候没有批次的数据，用训练时得到的均值和方差，
+        //这里保存一下，后面做加权平均，就以这个为起点。这样做的好处是，
+        //一开始初始化为0，刚开始的时候肯定值非常小，而一般是训练几个迭代周期后进行验证
+        //用第一个batch的mean和std做初始化，能减少验证集上的误差
+        if (!running_mean_std_init)
+        {
+            (*in[1])[0] = mean_tmp;
+            (*in[2])[0] = std_tmp;
+            running_mean_std_init = true;
+        }
+        //7.移动加权平均(计算整个训练集的均值和方差)
+        double yita = 0.99;
+        (*in[1])[0] = yita*(*in[1])[0] + (1 - yita)*mean_tmp;//每次更新时把之前的值衰减一点点（乘以一个yita，一般很大，如0.9,0.99），然后把当前的值加一点点进去(1-yita)。
+        (*in[2])[0] = yita*(*in[2])[0] + (1 - yita)*std_tmp;
+
+    }
+    else
+    {
+        //测试阶段，用 running_mean_和running__std_来归一化每一个特征
+        for (int n = 0; n < N; ++n)
+            (*out)[n] = ((*in[0])[n] + (*in[1])[0]) / (*in[2])[0];
+    }
+
+    return;
+}
+
+void BNLayer::backward(const shared_ptr<Blob>& din,
+                       const vector<shared_ptr<Blob>>& cache,
+                       vector<shared_ptr<Blob>>& grads,
+                       const LayerParameter& param)
+{
+    grads[0].reset(new Blob(cache[0]->size(), TZEROS));//dx
+    int N = grads[0]->get_N();
+    int C = grads[0]->get_C();
+    int H = grads[0]->get_H();
+    int W = grads[0]->get_W();
+
+    //广播均值和标准差，完成尺寸匹配
+    cube mean_tmp(H, W, C, fill::zeros);
+    cube var_tmp(H, W, C, fill::zeros);
+    cube std_tmp(H, W, C, fill::zeros);
+    for (int c = 0; c < C; ++c)
+    {
+        mean_tmp.slice(c).fill(as_scalar((*mean_).slice(c)));//负均值-->cube(H, W, C)
+        var_tmp.slice(c).fill(as_scalar((*var_).slice(c)));
+        std_tmp.slice(c).fill(as_scalar((*std_).slice(c)));//标准差-->cube(H, W, C)
+    }
+    //注意：反向传播的计算是可以通过化简来减少计算量的，这里没做化简，直接按原始公式实现
+    //遍历每一个输出梯度cube (*grads[0])[k] 完成梯度的计算
+    for (int k = 0; k < N; ++k)
+    {
+        cube item1(H, W, C, fill::zeros);
+        for (int i = 0; i < N; ++i)//输入梯度cube跟输入特征对应位置相乘加上均值
+            item1 += (*din)[i] % ((*cache[0])[i] + mean_tmp);//cube(H, W, C)
+        cube tmp = (-sum(sum(item1, 0), 1) / (2 * (*var_) % (*std_))) / N;//cube(1, 1, C)
+
+        cube item2(1, 1, C, fill::zeros);
+        for (int j = 0; j < N; ++j)
+            item2 += (tmp % (2 * (sum(sum((*cache[0])[j], 0), 1) / (H*W) + (*mean_))));//cube(1, 1, C)
+
+        cube item3(H, W, C, fill::zeros);
+        for (int i = 0; i < N; ++i)
+            item3 += (*din)[i] / std_tmp;//cube(H, W, C)
+
+        cube item4(1, 1, C, fill::zeros);
+        item4 = sum(sum(item3, 0), 1);//cube(1, 1, C)
+
+        //4.广播，完成尺寸匹配
+        cube black0 = (item2 + item4) / (-N);//黑色梯度流
+        cube red0 = (tmp % (2 * (sum(sum((*cache[0])[k], 0), 1) / (H*W) + (*mean_))));//红色梯度流
+        cube black_(H, W, C, fill::zeros);//广播后的黑色梯度流
+        cube red_(H, W, C, fill::zeros);//广播后的红色梯度流
+        cube purple_ = (*din)[k] / std_tmp;
+        for (int c = 0; c < C; ++c)
+        {
+            black_.slice(c).fill(as_scalar(black0.slice(c)));//cube(H, W, C)
+            red_.slice(c).fill(as_scalar(red0.slice(c)));//cube(H, W, C)
+        }
+        (*grads[0])[k] = (black_ + red_) / (H*W) + purple_;
+    }
+    return;
+}
+
+void ScaleLayer::initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param)
+{
+    //1.获取Scale层核通道数
+    int C = inShape[1];
+
+    //2.初始化存储W和b的Blob（实际上这层的w和b就是γ和β）
+    if (!in[1])//存储γ的Blob不为空
+    {
+        in[1].reset(new Blob(1, C, 1, 1, TONES));
+        cout << "initLayer: " << lname << "  Init  γ  with Ones ;" << endl;
+    }
+    if (!in[2])//存储β的Blob不为空
+    {
+        in[2].reset(new Blob(1, C, 1, 1, TZEROS));
+        cout << "initLayer: " << lname << "  Init  β  with Zeros ;" << endl;
+    }
+    return;
+}
+
+void ScaleLayer::calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param)
+{
+    outShape.assign(inShape.begin(), inShape.end());//将尺寸inShape复制一份给尺寸outShape（深拷贝）
+    return;
+}
+
+void ScaleLayer::forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode)
+{
+    out.reset(new Blob(in[0]->size(), TZEROS));
+
+    int N = in[0]->get_N();
+    int C = in[0]->get_C();
+    int H = in[0]->get_H();
+    int W = in[0]->get_W();
+
+    //1.通过γ和β的广播，实现和输入特征Blob的尺寸匹配
+    shared_ptr<Blob> gamma(new Blob(1, C, H, W, TZEROS));
+    shared_ptr<Blob> beta(new Blob(1, C, H, W, TZEROS));
+    for (int c = 0; c < C; ++c)
+    {
+        (*gamma)[0].slice(c).fill(as_scalar((*in[1])[0].slice(c)));
+        (*beta)[0].slice(c).fill(as_scalar((*in[2])[0].slice(c)));
+    }
+    //2.对输入特征做伸缩和平移（scale和shift）
+    for (int n = 0; n < N; ++n)
+        (*out)[n] = (*gamma)[0] % (*in[0])[n] + (*beta)[0];//out = γ * in + β
+
+    return;
+}
+
+void ScaleLayer::backward(const shared_ptr<Blob>& din,
+                          const vector<shared_ptr<Blob>>& cache,
+                          vector<shared_ptr<Blob>>& grads,
+                          const LayerParameter& param)
+{
+    grads[0].reset(new Blob(cache[0]->size(), TZEROS));//dx
+    grads[1].reset(new Blob(cache[1]->size(), TZEROS));//dγ
+    grads[2].reset(new Blob(cache[2]->size(), TZEROS));//dβ
+    int N = grads[0]->get_N();
+    int C = grads[0]->get_C();
+    int H = grads[0]->get_H();
+    int W = grads[0]->get_W();
+
+    //1.γ 通过广播完成尺寸匹配
+    shared_ptr<Blob> gamma(new Blob(1, C, H, W, TZEROS));
+    for (int c = 0; c < C; ++c)
+        (*gamma)[0].slice(c).fill(as_scalar((*cache[1])[0].slice(c)));//因为dx = din % γ，所以γ 需要广播完成尺寸匹配
+
+
+    //2.反向计算梯度
+    shared_ptr<Blob> dgamma(new Blob(1, C, H, W, TZEROS));
+    shared_ptr<Blob> dbeta(new Blob(1, C, H, W, TZEROS));
+    for (int n = 0; n < N; ++n)
+    {
+        (*grads[0])[n] = (*din)[n] % (*gamma)[0];//dx = din % γ （N,C,H,W）
+        (*dgamma)[0] += (*din)[n] % (*cache[0])[n];//dγ = din % x（1, C,H,W）注意这边的不同样本的梯度累加
+        (*dbeta)[0] += (*din)[n];//dβ = din（1, C,H,W）注意这边的不同样本的梯度累加
+    }
+    (*grads[1])[0] = sum(sum((*dgamma)[0], 0), 1) / N;//梯度合流后平均dγ
+    (*grads[2])[0] = sum(sum((*dbeta)[0], 0), 1) / N;//梯度合流后平均dβ
+
+    return;
+}
+
+
 void SoftmaxLossLayer::softmax_cross_entropy_with_logits(const vector<shared_ptr<Blob>>& in, double& loss, shared_ptr<Blob>& dout)
 {
     cout << "SoftmaxLossLayer::softmax_cross_entropy_with_logits()..." << endl;

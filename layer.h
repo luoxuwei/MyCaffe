@@ -123,6 +123,39 @@ private:
     shared_ptr<Blob> drop_mask;
 };
 
+class BNLayer : public Layer
+{
+public:
+    BNLayer() : running_mean_std_init(false){}
+    ~BNLayer() {}
+    void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
+    void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode);
+    void backward(const shared_ptr<Blob>& din,
+                  const vector<shared_ptr<Blob>>& cache,
+                  vector<shared_ptr<Blob>>& grads,
+                  const LayerParameter& param);
+private:
+    bool running_mean_std_init;
+    shared_ptr<cube> mean_;  //（负）均值
+    shared_ptr<cube> var_;  //方差
+    shared_ptr<cube> std_;  //标准差
+};
+
+class ScaleLayer : public Layer
+{
+public:
+    ScaleLayer() {}
+    ~ScaleLayer() {}
+    void initLayer(const vector<int>& inShape, const string& lname, vector<shared_ptr<Blob>>& in, const LayerParameter& param);
+    void calcShape(const vector<int>&inShape, vector<int>&outShape, const LayerParameter& param);
+    void forward(const vector<shared_ptr<Blob>>& in, shared_ptr<Blob>& out, const LayerParameter& param, string mode);
+    void backward(const shared_ptr<Blob>& din,
+                  const vector<shared_ptr<Blob>>& cache,
+                  vector<shared_ptr<Blob>>& grads,
+                  const LayerParameter& param);
+};
+
 class SoftmaxLossLayer
 {
 public:
