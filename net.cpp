@@ -191,8 +191,8 @@ void Net::trainNet(NetParameter& param)
     int num_batchs = iter_per_epoch * param.num_epochs;// 295 * 2 = 590
     cout << "num_batchs(iterations) = " << num_batchs << endl;
 
-    //for (int iter = 0; iter < num_batchs; ++iter)
-    for (int iter = 0; iter < 50; ++iter)
+    for (int iter = 0; iter < num_batchs; ++iter)
+//    for (int iter = 0; iter < 50; ++iter)
     {
         //----------step1. 从整个训练集中获取一个mini-batch
         shared_ptr<Blob> X_batch;
